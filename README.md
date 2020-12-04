@@ -12,3 +12,6 @@ For now, please note that we did not write the following libraries and that if y
  - MPU6050_6axis_MotionApps20.h
  - MPU6050.cpp
  - MPU6050.h
+ - Servo.cpp
+ - Servo.h
+ - ServoTimers.h
