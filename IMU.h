@@ -79,12 +79,11 @@ class IMU
         //MPU6050 mpu(0x69); // <-- use for AD0 high
 
         //led state vars
-        bool _blinkState = false;
+        bool _blinkState;
 
         // MPU control/status vars
-        bool _dmpReady = false;  // set true if DMP init was successful
+        bool _dmpReady;  // set true if DMP init was successful
         uint8_t _mpuIntStatus;   // holds actual interrupt status byte from MPU
-        uint8_t _devStatus;      // return status after each device operation (0 = success, !0 = error)
         uint16_t _packetSize;    // expected DMP packet size (default is 42 bytes)
         uint16_t _fifoCount;     // count of all bytes currently in FIFO
         uint8_t _fifoBuffer[64]; // FIFO storage buffer
@@ -109,12 +108,12 @@ class IMU
 
         // This function is not required when using the Galileo 
         volatile bool _mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
-        int _mpuInterruptPin = 38;
+        unsigned int _mpuInterruptPin;
     
     public:
-        IMU();
+        IMU(unsigned int mpuInterruptPin);
 
-        void begin(bool verbose);
+        void begin(void (*externalDmpDataReady)(), bool verbose=false);
 
         void update();
 
@@ -127,4 +126,4 @@ class IMU
         float getPitch();
 
         float getRoll();
-}
+};
