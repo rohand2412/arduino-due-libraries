@@ -1,7 +1,7 @@
 #include "MPU6050_6Axis_MotionApps20.h"
 
 // I Simplified this:
-uint8_t MPU6050::dmpInitialize() {
+uint8_t MPU6050::dmpInitialize(bool verbose) {
 	// reset device
 	DEBUG_PRINTLN(F("\n\nResetting MPU6050..."));
 	reset();
@@ -19,10 +19,13 @@ uint8_t MPU6050::dmpInitialize() {
 	// get MPU hardware revision
 	setMemoryBank(0x10, true, true);
 	setMemoryStartAddress(0x06);
-	Serial.println(F("Checking hardware revision..."));
-	Serial.print(F("Revision @ user[16][6] = "));
-	Serial.println(readMemoryByte(), HEX);
-	Serial.println(F("Resetting memory bank selection to 0..."));
+    if (verbose)
+        {
+        Serial.println(F("Checking hardware revision..."));
+        Serial.print(F("Revision @ user[16][6] = "));
+        Serial.println(readMemoryByte(), HEX);
+        Serial.println(F("Resetting memory bank selection to 0..."));
+    }
 	setMemoryBank(0, false, false);
 
 	// check OTP bank valid

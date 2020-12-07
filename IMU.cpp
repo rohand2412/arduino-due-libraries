@@ -46,24 +46,43 @@ void IMU::begin(void (*externalDmpDataReady)(), bool verbose /*=false*/)
     #endif
 
     // initialize device
-    Serial.println(F("Initializing I2C devices..."));
+    if (verbose)
+        Serial.println(F("Initializing I2C devices..."));
     _mpu.initialize();
 
     // verify connection
-    Serial.println(F("Testing device connections..."));
-    Serial.println(F("MPU6050 connection "));
-    Serial.print(_mpu.testConnection() ? F("successful") : F("failed"));
+    if (verbose)
+    {
+        Serial.println(F("Testing device connections..."));
+        Serial.println(F("MPU6050 connection "));
+        Serial.print(_mpu.testConnection() ? F("successful") : F("failed"));
+    }
+    else if (!_mpu.testConnection())
+    {
+        Serial.println(F("MPU6050 connection failed"));
+        while (true)
+            ;
+    }
 
     // wait for ready
-    Serial.println(F("\nSend any character to begin DMP programming and demo: "));
-    while (Serial.available() && Serial.read()); // empty buffer
-    while (!Serial.available());                 // wait for data
-    while (Serial.available() && Serial.read()); // empty buffer again
+    if (verbose)
+    {
+        Serial.println(F("\nSend any character to begin DMP programming and demo: "));
+        while (Serial.available() && Serial.read()); // empty buffer
+        while (!Serial.available());                 // wait for data
+        while (Serial.available() && Serial.read()); // empty buffer again
+    }
+    else
+    {
+        while (Serial.available() && Serial.read()); // empty buffer
+    }
+    
 
     // load and configure the DMP
-    Serial.println(F("Initializing DMP..."));
+    if (verbose)
+        Serial.println(F("Initializing DMP..."));
     uint8_t devStatus; // return status after each device operation (0 = success, !0 = error)
-    devStatus = _mpu.dmpInitialize();
+    devStatus = _mpu.dmpInitialize(verbose);
 
     // supply your own gyro offsets here, scaled for min sensitivity
     _mpu.setXGyroOffset(_gx);
@@ -76,16 +95,19 @@ void IMU::begin(void (*externalDmpDataReady)(), bool verbose /*=false*/)
     // make sure it worked (returns 0 if so)
     if (devStatus == 0) {
         // turn on the DMP, now that it's ready
-        Serial.println(F("Enabling DMP..."));
+        if (verbose)
+            Serial.println(F("Enabling DMP..."));
         _mpu.setDMPEnabled(true);
 
         // enable Arduino interrupt detection
-        Serial.println(F("Enabling interrupt detection (Arduino external interrupt 0)..."));
+        if (verbose)
+            Serial.println(F("Enabling interrupt detection (Arduino external interrupt 0)..."));
         attachInterrupt(digitalPinToInterrupt(_mpuInterruptPin), *externalDmpDataReady, RISING);
         _mpuIntStatus = _mpu.getIntStatus();
 
         // set our DMP Ready flag so the main loop() function knows it's okay to use it
-        Serial.println(F("DMP ready! Waiting for first interrupt..."));
+        if (verbose)
+            Serial.println(F("DMP ready! Waiting for first interrupt..."));
         _dmpReady = true;
 
         // get expected DMP packet size for later comparison
@@ -95,9 +117,12 @@ void IMU::begin(void (*externalDmpDataReady)(), bool verbose /*=false*/)
         // 1 = initial memory load failed
         // 2 = DMP configuration updates failed
         // (if it's going to break, usually the code will be 1)
-        Serial.print(F("DMP Initialization failed (code "));
-        Serial.print(devStatus);
-        Serial.println(F(")"));
+        if (verbose)
+        {
+            Serial.print(F("DMP Initialization failed (code "));
+            Serial.print(devStatus);
+            Serial.println(F(")"));
+        }
     }
 
     // configure LED for output
