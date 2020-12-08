@@ -133,7 +133,7 @@ void IMU::begin(void (*externalDmpDataReady)(), bool verbose /*=false*/)
 // ===                    MAIN PROGRAM LOOP                     ===
 // ================================================================
 
-void IMU::update()
+void IMU::updateRaw()
 {
     // if programming failed, don't try to do anything
     if (!_dmpReady) return;
@@ -174,12 +174,15 @@ void IMU::update()
         // (this lets us immediately read more without waiting for an interrupt)
         _fifoCount -= _packetSize;
 
-
         #ifdef OUTPUT_READABLE_YAWPITCHROLL
             // display Euler angles in degrees
             _mpu.dmpGetQuaternion(&_q, _fifoBuffer);
             _mpu.dmpGetGravity(&_gravity, &_q);
             _mpu.dmpGetYawPitchRoll(_ypr, &_q, &_gravity);
+            
+            _yawRaw = _ypr[0] * 180 / M_PI;
+            _pitchRaw = _ypr[1] * 180 / M_PI;
+            _rollRaw = _ypr[2] * 180 / M_PI;
         #endif
 
         // blink LED to indicate activity
@@ -212,17 +215,17 @@ void IMU::dmpDataReady()
     _mpuInterrupt = true;
 }
 
-float IMU::getYaw()
+float IMU::getYawRaw() const
 {
-    return _ypr[0] * 180 / M_PI;
+    return _yawRaw;
 }
 
-float IMU::getPitch()
+float IMU::getPitchRaw() const
 {
-    return _ypr[1] * 180 / M_PI;
+    return _pitchRaw;
 }
 
-float IMU::getRoll()
+float IMU::getRollRaw() const
 {
-    return _ypr[2] * 180 / M_PI;
+    return _rollRaw;
 }

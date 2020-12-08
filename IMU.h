@@ -93,6 +93,9 @@ class IMU
         Quaternion _q;           // [w, x, y, z]         quaternion container
         float _euler[3];         // [psi, theta, phi]    Euler angle container
         float _ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
+        float _yawRaw;           // [yaw]
+        float _pitchRaw;         // [pitch]
+        float _rollRaw;          // [roll]
 
         //offset vars
         int _ax;
@@ -115,15 +118,15 @@ class IMU
 
         void begin(void (*externalDmpDataReady)(), bool verbose=false);
 
-        void update();
+        void updateRaw();
 
         void setOffsets(int ax, int ay, int az, int gx, int gy, int gz);
 
         void dmpDataReady();
 
-        float getYaw();
+        float getYawRaw() const;
 
-        float getPitch();
+        float getPitchRaw() const;
 
-        float getRoll();
+        float getRollRaw() const;
 };
