@@ -29,6 +29,9 @@ IMU::IMU(unsigned int mpuInterruptPin)
     _gx = 0;
     _gy = 0;
     _gz = 0;
+
+    //Initialize updateRaw() vars
+    _waitingForData = false;
 }
 
 // ================================================================
@@ -138,23 +141,25 @@ void IMU::updateRaw()
     // if programming failed, don't try to do anything
     if (!_dmpReady) return;
 
-    // wait for MPU interrupt or extra packet(s) available
+    //Only enter if not already executed this and did not get halted downstream
+    if(!_waitingForData)
+    {
+        // check for MPU interrupt or extra packet(s) available otherwise exit
+        #ifdef ARDUINO_BOARD
+            if (!_mpuInterrupt && _fifoCount < _packetSize) return;
+        #endif
 
-    #ifdef ARDUINO_BOARD
-        while (!_mpuInterrupt && _fifoCount < _packetSize) {
-        }
-    #endif
+        #ifdef GALILEO_BOARD
+            delay(10);
+        #endif
 
-    #ifdef GALILEO_BOARD
-        delay(10);
-    #endif
+        // reset interrupt flag and get INT_STATUS byte
+        _mpuInterrupt = false;
+        _mpuIntStatus = _mpu.getIntStatus();
 
-    // reset interrupt flag and get INT_STATUS byte
-    _mpuInterrupt = false;
-    _mpuIntStatus = _mpu.getIntStatus();
-
-    // get current FIFO count
-    _fifoCount = _mpu.getFIFOCount();
+        // get current FIFO count
+        _fifoCount = _mpu.getFIFOCount();
+    }
 
     // check for overflow (this should never happen unless our code is too inefficient)
     if ((_mpuIntStatus & 0x10) || _fifoCount == 1024) {
@@ -163,9 +168,20 @@ void IMU::updateRaw()
         Serial.println(F("FIFO overflow!"));
 
     // otherwise, check for DMP data ready interrupt (this should happen frequently)
-    } else if (_mpuIntStatus & 0x02) {
+    //or if only reentering from previous halt at packet size
+    } else if (_mpuIntStatus & 0x02 || _waitingForData) {
         // wait for correct available data length, should be a VERY short wait
-        while (_fifoCount < _packetSize) _fifoCount = _mpu.getFIFOCount();
+        if (_fifoCount < _packetSize)
+        {
+            _fifoCount = _mpu.getFIFOCount();
+
+            //Indicate that everything up till here has already been run
+            _waitingForData = true;
+            return;
+        }
+        else
+            //Reset flag
+            _waitingForData = false;
 
         // read a packet from FIFO
         _mpu.getFIFOBytes(_fifoBuffer, _packetSize);
