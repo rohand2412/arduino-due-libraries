@@ -15,3 +15,9 @@ For now, please note that we did not write the following libraries and that if y
  - Servo.cpp
  - Servo.h
  - ServoTimers.h
+
+ We did however write the following libraries.
+ - IMU.cpp
+ - IMU.h
+ - IMU_Wrapper.cpp
+ - IMU_Wrapper.h
