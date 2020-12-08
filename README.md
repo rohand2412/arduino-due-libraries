@@ -21,3 +21,5 @@ For now, please note that we did not write the following libraries and that if y
  - IMU.h
  - IMU_Wrapper.cpp
  - IMU_Wrapper.h
+ - Servo_Wrapper.cpp
+ - Servo_Wrapper.h
