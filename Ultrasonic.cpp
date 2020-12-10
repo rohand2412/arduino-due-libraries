@@ -34,6 +34,16 @@ unsigned int Ultrasonic::getDistance() const
     return _distance;
 }
 
+unsigned int Ultrasonic::getEchoPin() const
+{
+    return _echoPin;
+}
+
+unsigned int Ultrasonic::getTrigPin() const
+{
+    return _trigPin;
+}
+
 void Ultrasonic::echoPinISR()
 {
     if(digitalRead(_echoPin)==HIGH)

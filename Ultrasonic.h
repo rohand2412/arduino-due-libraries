@@ -16,8 +16,8 @@ class Ultrasonic
             _startMS;
 
     public:
-        Ultrasonic(unsigned int echoPin, 
-                   unsigned int trigPin, 
+        Ultrasonic(unsigned int trigPin,
+                   unsigned int echoPin,
                    unsigned int burstFrequencyMS);
 
         void begin(void (*externalEchoPinISR)());
@@ -25,6 +25,10 @@ class Ultrasonic
         void update();
 
         unsigned int getDistance() const;
+
+        unsigned int getEchoPin() const;
+
+        unsigned int getTrigPin() const;
 
         void echoPinISR();
 };
