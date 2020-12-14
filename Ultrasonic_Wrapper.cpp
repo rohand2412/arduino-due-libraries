@@ -1,32 +1,37 @@
 #include <Arduino.h>
+#include <new>
 #include "Ultrasonic_Wrapper.h"
 
 Ultrasonic_Wrapper::Ultrasonic_Wrapper(unsigned int trigPin, 
-                                       unsigned int echoPins[],
-                                       unsigned int burstFrequencies[], 
+                                       unsigned int* echoPins,
+                                       unsigned int* burstFrequencies, 
                                        unsigned int sensorNum) :
                                        _trigPin(trigPin),
                                        _sensorNum(sensorNum)
 {
-    _ultrasonics.reserve(_sensorNum);
-    for (int i = 0; i < _ultrasonics.size(); i++)
+    char *ultrasonics = new char[_sensorNum * sizeof(Ultrasonic)];
+    for (unsigned int i = 0; i < _sensorNum; i++)
     {
-        _ultrasonics.emplace_back(_trigPin, echoPins[i], burstFrequencies[i]);
+        Ultrasonic *ultrasonic = new (&ultrasonics[i * sizeof(Ultrasonic)])
+        Ultrasonic(_trigPin, *echoPins++, *burstFrequencies++); //end of previous line
     }
+    _ultrasonics = reinterpret_cast<Ultrasonic *>(ultrasonics);
 }
 
 Ultrasonic_Wrapper::Ultrasonic_Wrapper(unsigned int trigPin,
-                                       unsigned int echoPins[],
+                                       unsigned int* echoPins,
                                        unsigned int burstFrequency,
                                        unsigned int sensorNum) :
                                        _trigPin(trigPin),
                                        _sensorNum(sensorNum)
 {
-    _ultrasonics.reserve(_sensorNum);
-    for (int i = 0; i < _ultrasonics.size(); i++)
+    char *ultrasonics = new char[_sensorNum * sizeof(Ultrasonic)];
+    for (unsigned int i = 0; i < _sensorNum; i++)
     {
-        _ultrasonics.emplace_back(_trigPin, echoPins[i], burstFrequency);
+        Ultrasonic *ultrasonic = new (&ultrasonics[i * sizeof(Ultrasonic)])
+        Ultrasonic(_trigPin, *echoPins++, burstFrequency); //end of previous line
     }
+    _ultrasonics = reinterpret_cast<Ultrasonic *>(ultrasonics);
 }
 
 Ultrasonic_Wrapper::Ultrasonic_Wrapper(unsigned int trigPin,
@@ -35,45 +40,47 @@ Ultrasonic_Wrapper::Ultrasonic_Wrapper(unsigned int trigPin,
                                        _trigPin(trigPin),
                                        _sensorNum(1)
 {
-    _ultrasonics.reserve(_sensorNum);
-    for (int i = 0; i < _ultrasonics.size(); i++)
+    char *ultrasonics = new char[_sensorNum * sizeof(Ultrasonic)];
+    for (unsigned int i = 0; i < _sensorNum; i++)
     {
-        _ultrasonics.emplace_back(_trigPin, echoPin, burstFrequency);
+        Ultrasonic *ultrasonic = new (&ultrasonics[i * sizeof(Ultrasonic)])
+        Ultrasonic(_trigPin, echoPin, burstFrequency); //end of previous line
     }
+    _ultrasonics = reinterpret_cast<Ultrasonic *>(ultrasonics);
 }
 
 void Ultrasonic_Wrapper::begin(void (*externalEchoPinISRs[])())
 {
-    for (int i = 0; i < _ultrasonics.size(); i++)
+    for (unsigned int i = 0; i < _sensorNum; i++)
     {
-        _ultrasonics[i].begin(externalEchoPinISRs[i]);
+        (*(_ultrasonics + i)).begin(externalEchoPinISRs[i]);
     }
 }
 
 void Ultrasonic_Wrapper::begin(void (*externalEchoPinISR)())
 {
-    for (int i = 0; i < _ultrasonics.size(); i++)
+    for (unsigned int i = 0; i < _sensorNum; i++)
     {
-        _ultrasonics[i].begin(externalEchoPinISR);
+        (*(_ultrasonics + i)).begin(externalEchoPinISR);
     }
 }
 
 void Ultrasonic_Wrapper::update()
 {
-    for (Ultrasonic& us: _ultrasonics)
+    for (unsigned int i = 0; i < _sensorNum; i++)
     {
-        us.update();
+        (*(_ultrasonics + i)).update();
     }
 }
 
 unsigned int Ultrasonic_Wrapper::getDistance(unsigned int index /*= 0*/) const
 {
-    return _ultrasonics[index].getDistance();
+    return (*(_ultrasonics + index)).getDistance();
 }
 
 unsigned int Ultrasonic_Wrapper::getEchoPin(unsigned int index /*= 0*/) const
 {
-    return _ultrasonics[index].getEchoPin();
+    return (*(_ultrasonics + index)).getEchoPin();
 }
 
 unsigned int Ultrasonic_Wrapper::getTrigPin() const
@@ -83,5 +90,5 @@ unsigned int Ultrasonic_Wrapper::getTrigPin() const
 
 void Ultrasonic_Wrapper::echoPinISR(unsigned int index /*= 0*/)
 {
-    _ultrasonics[index].echoPinISR();
+    (*(_ultrasonics + index)).echoPinISR();
 }

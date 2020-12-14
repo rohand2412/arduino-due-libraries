@@ -1,6 +1,5 @@
 #pragma once
 #include <Arduino.h>
-#include <vector>
 #include "Ultrasonic.h"
 
 class Ultrasonic_Wrapper
@@ -10,16 +9,16 @@ class Ultrasonic_Wrapper
 
         const unsigned int _sensorNum;
 
-        std::vector<Ultrasonic> _ultrasonics;
-    
+        Ultrasonic *_ultrasonics;
+
     public:
         Ultrasonic_Wrapper(unsigned int trigPin,
-                           unsigned int echoPins[],
-                           unsigned int burstFrequencies[],
+                           unsigned int* echoPins,
+                           unsigned int* burstFrequencies,
                            unsigned int sensorNum);
 
         Ultrasonic_Wrapper(unsigned int trigPin,
-                           unsigned int echoPins[],
+                           unsigned int* echoPins,
                            unsigned int burstFrequency,
                            unsigned int sensorNum);
 
