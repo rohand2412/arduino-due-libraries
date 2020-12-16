@@ -7,26 +7,26 @@ class Ultrasonic_Wrapper
     private:
         const unsigned int _trigPin;
 
-        const unsigned int _sensorNum;
+        const size_t _sensorNum;
 
         Ultrasonic **_ultrasonicsPtr;
 
     public:
-        static const int ULTRASONIC_FRONT = 0;
-        static const int ULTRASONIC_LEFT = 1;
-        static const int ULTRASONIC_RIGHT = 2;
-        static const int ULTRASONIC_BACK = 3;
+        static const size_t ULTRASONIC_FRONT = 0;
+        static const size_t ULTRASONIC_LEFT = 1;
+        static const size_t ULTRASONIC_RIGHT = 2;
+        static const size_t ULTRASONIC_BACK = 3;
 
     public:
         Ultrasonic_Wrapper(unsigned int trigPin,
                            unsigned int* echoPins,
                            unsigned int* burstFrequencies,
-                           unsigned int sensorNum);
+                           size_t sensorNum);
 
         Ultrasonic_Wrapper(unsigned int trigPin,
                            unsigned int* echoPins,
                            unsigned int burstFrequency,
-                           unsigned int sensorNum);
+                           size_t sensorNum);
 
         Ultrasonic_Wrapper(unsigned int trigPin,
                            unsigned int echoPin,
@@ -40,13 +40,13 @@ class Ultrasonic_Wrapper
 
         void update();
 
-        unsigned int getDistance(unsigned int index = 0) const;
+        unsigned int getDistance(size_t index = 0) const;
 
-        unsigned int getEchoPin(unsigned int index = 0) const;
+        unsigned int getEchoPin(size_t index = 0) const;
 
         unsigned int getTrigPin() const;
 
-        void echoPinISR(unsigned int index = 0);
+        void echoPinISR(size_t index = 0);
     
     private:
         void _init(unsigned int *echoPins, unsigned int *burstFrequencies);
