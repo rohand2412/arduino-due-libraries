@@ -9,7 +9,7 @@ class Ultrasonic_Wrapper
 
         const unsigned int _sensorNum;
 
-        Ultrasonic **_ultrasonics;
+        Ultrasonic **_ultrasonicsPtr;
 
     public:
         Ultrasonic_Wrapper(unsigned int trigPin,

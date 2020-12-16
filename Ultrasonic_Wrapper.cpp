@@ -34,7 +34,7 @@ void Ultrasonic_Wrapper::begin(void (*externalEchoPinISRs[])())
 {
     for (unsigned int i = 0; i < _sensorNum; i++)
     {
-        (*(*_ultrasonics + i)).begin(externalEchoPinISRs[i]);
+        _ultrasonicsPtr[i]->begin(externalEchoPinISRs[i]);
     }
 }
 
@@ -42,7 +42,7 @@ void Ultrasonic_Wrapper::begin(void (*externalEchoPinISR)())
 {
     for (unsigned int i = 0; i < _sensorNum; i++)
     {
-        (*(*_ultrasonics + i)).begin(externalEchoPinISR);
+        _ultrasonicsPtr[i]->begin(externalEchoPinISR);
     }
 }
 
@@ -50,18 +50,18 @@ void Ultrasonic_Wrapper::update()
 {
     for (unsigned int i = 0; i < _sensorNum; i++)
     {
-        (*(*_ultrasonics + i)).update();
+        _ultrasonicsPtr[i]->update();
     }
 }
 
 unsigned int Ultrasonic_Wrapper::getDistance(unsigned int index /*= 0*/) const
 {
-    return (*(*_ultrasonics + index)).getDistance();
+    return _ultrasonicsPtr[index]->getDistance();
 }
 
 unsigned int Ultrasonic_Wrapper::getEchoPin(unsigned int index /*= 0*/) const
 {
-    return (*(*_ultrasonics + index)).getEchoPin();
+    return _ultrasonicsPtr[index]->getEchoPin();
 }
 
 unsigned int Ultrasonic_Wrapper::getTrigPin() const
@@ -71,14 +71,14 @@ unsigned int Ultrasonic_Wrapper::getTrigPin() const
 
 void Ultrasonic_Wrapper::echoPinISR(unsigned int index /*= 0*/)
 {
-    (*(*_ultrasonics + index)).echoPinISR();
+    _ultrasonicsPtr[index]->echoPinISR();
 }
 
 void Ultrasonic_Wrapper::_init(unsigned int *echoPins, unsigned int *burstFrequencies)
 {
-    _ultrasonics = new Ultrasonic *[_sensorNum];
+    _ultrasonicsPtr = new Ultrasonic *[_sensorNum];
     for (unsigned int i = 0; i < _sensorNum; i++)
     {
-        _ultrasonics[i] = new Ultrasonic(_trigPin, *echoPins++, *burstFrequencies++);
+        _ultrasonicsPtr[i] = new Ultrasonic(_trigPin, *echoPins++, *burstFrequencies++);
     }
 }
