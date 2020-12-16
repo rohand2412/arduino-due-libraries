@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <new>
 #include "Ultrasonic_Wrapper.h"
 
 Ultrasonic_Wrapper::Ultrasonic_Wrapper(unsigned int trigPin, 
@@ -9,11 +8,7 @@ Ultrasonic_Wrapper::Ultrasonic_Wrapper(unsigned int trigPin,
                                        _trigPin(trigPin),
                                        _sensorNum(sensorNum)
 {
-    _ultrasonics = new Ultrasonic *[_sensorNum];
-    for (unsigned int i = 0; i < _sensorNum; i++)
-    {
-        _ultrasonics[i] = new Ultrasonic(_trigPin, *echoPins++, *burstFrequencies++);
-    }
+    _init(echoPins, burstFrequencies);
 }
 
 Ultrasonic_Wrapper::Ultrasonic_Wrapper(unsigned int trigPin,
@@ -23,11 +18,7 @@ Ultrasonic_Wrapper::Ultrasonic_Wrapper(unsigned int trigPin,
                                        _trigPin(trigPin),
                                        _sensorNum(sensorNum)
 {
-    _ultrasonics = new Ultrasonic *[_sensorNum];
-    for (unsigned int i = 0; i < _sensorNum; i++)
-    {
-        _ultrasonics[i] = new Ultrasonic(_trigPin, *echoPins++, burstFrequency);
-    }
+    _init(echoPins, &burstFrequency);
 }
 
 Ultrasonic_Wrapper::Ultrasonic_Wrapper(unsigned int trigPin,
@@ -36,11 +27,7 @@ Ultrasonic_Wrapper::Ultrasonic_Wrapper(unsigned int trigPin,
                                        _trigPin(trigPin),
                                        _sensorNum(1)
 {
-    _ultrasonics = new Ultrasonic *[_sensorNum];
-    for (unsigned int i = 0; i < _sensorNum; i++)
-    {
-        _ultrasonics[i] = new Ultrasonic(_trigPin, echoPin, burstFrequency);
-    }
+    _init(&echoPin, &burstFrequency);
 }
 
 void Ultrasonic_Wrapper::begin(void (*externalEchoPinISRs[])())
@@ -85,4 +72,13 @@ unsigned int Ultrasonic_Wrapper::getTrigPin() const
 void Ultrasonic_Wrapper::echoPinISR(unsigned int index /*= 0*/)
 {
     (*(*_ultrasonics + index)).echoPinISR();
+}
+
+void Ultrasonic_Wrapper::_init(unsigned int *echoPins, unsigned int *burstFrequencies)
+{
+    _ultrasonics = new Ultrasonic *[_sensorNum];
+    for (unsigned int i = 0; i < _sensorNum; i++)
+    {
+        _ultrasonics[i] = new Ultrasonic(_trigPin, *echoPins++, *burstFrequencies++);
+    }
 }

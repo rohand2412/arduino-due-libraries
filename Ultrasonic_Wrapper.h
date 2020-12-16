@@ -39,4 +39,7 @@ class Ultrasonic_Wrapper
         unsigned int getTrigPin() const;
 
         void echoPinISR(unsigned int index = 0);
+    
+    private:
+        void _init(unsigned int *echoPins, unsigned int *burstFrequencies);
 };
