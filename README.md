@@ -24,3 +24,7 @@ For now, please note that we did not write the following libraries and that if y
  - IMU_Wrapper.h
  - Servo_Wrapper.cpp
  - Servo_Wrapper.h
+ - Ultrasonic.cpp
+ - Ultrasonic.h
+ - Ultrasonic_Wrapper.cpp
+ - Ultrasonic_Wrapper.h
