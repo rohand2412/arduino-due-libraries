@@ -136,7 +136,7 @@ void IMU::begin(void (*externalDmpDataReady)(), bool verbose /*=false*/)
 // ===                    MAIN PROGRAM LOOP                     ===
 // ================================================================
 
-void IMU::updateRaw()
+void IMU::update()
 {
     // if programming failed, don't try to do anything
     if (!_dmpReady) return;
@@ -231,17 +231,17 @@ void IMU::dmpDataReady()
     _mpuInterrupt = true;
 }
 
-float IMU::getYawRaw() const
+float IMU::getYaw() const
 {
     return _yawRaw;
 }
 
-float IMU::getPitchRaw() const
+float IMU::getPitch() const
 {
     return _pitchRaw;
 }
 
-float IMU::getRollRaw() const
+float IMU::getRoll() const
 {
     return _rollRaw;
 }

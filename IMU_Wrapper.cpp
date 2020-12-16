@@ -12,10 +12,10 @@ IMU_Wrapper::IMU_Wrapper(unsigned int mpuInterruptPin) : IMU(mpuInterruptPin)
 
 void IMU_Wrapper::update()
 {
-  updateRaw();
-  float yawRaw = getYawRaw();
-  float pitchRaw = getPitchRaw();
-  float rollRaw = getRollRaw();
+  IMU::update();
+  float yawRaw = IMU::getYaw();
+  float pitchRaw = IMU::getPitch();
+  float rollRaw = IMU::getRoll();
   _overflow(_oldYawRaw, yawRaw, _yaw);
   _overflow(_oldPitchRaw, pitchRaw, _pitch);
   _overflow(_oldRollRaw, rollRaw, _roll);

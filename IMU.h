@@ -121,15 +121,15 @@ class IMU
 
         void begin(void (*externalDmpDataReady)(), bool verbose=false);
 
-        void updateRaw();
+        void update();
 
         void setOffsets(int ax, int ay, int az, int gx, int gy, int gz);
 
         void dmpDataReady();
 
-        float getYawRaw() const;
+        float getYaw() const;
 
-        float getPitchRaw() const;
+        float getPitch() const;
 
-        float getRollRaw() const;
+        float getRoll() const;
 };
