@@ -15,6 +15,7 @@ For now, please note that we did not write the following libraries and that if y
  - Servo.cpp
  - Servo.h
  - ServoTimers.h
+ - ArduinoTrace.h
 
  We did however write the following libraries.
  - IMU.cpp
