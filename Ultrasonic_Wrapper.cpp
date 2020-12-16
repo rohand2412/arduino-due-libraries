@@ -30,6 +30,15 @@ Ultrasonic_Wrapper::Ultrasonic_Wrapper(unsigned int trigPin,
     _init(&echoPin, &burstFrequency);
 }
 
+Ultrasonic_Wrapper::~Ultrasonic_Wrapper()
+{
+    for (unsigned int i = 0; i < _sensorNum; i++)
+    {
+        delete _ultrasonicsPtr[i];
+    }
+    delete[] _ultrasonicsPtr;
+}
+
 void Ultrasonic_Wrapper::begin(void (*externalEchoPinISRs[])())
 {
     for (unsigned int i = 0; i < _sensorNum; i++)

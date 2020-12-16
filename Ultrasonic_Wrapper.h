@@ -32,6 +32,8 @@ class Ultrasonic_Wrapper
                            unsigned int echoPin,
                            unsigned int burstFrequency);
 
+        ~Ultrasonic_Wrapper();
+
         void begin(void (*externalEchoPinISRs[])());
 
         void begin(void (*externalEchoPinISR)());
