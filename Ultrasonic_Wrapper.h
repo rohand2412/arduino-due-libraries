@@ -12,6 +12,12 @@ class Ultrasonic_Wrapper
         Ultrasonic **_ultrasonicsPtr;
 
     public:
+        static const int ULTRASONIC_FRONT = 0;
+        static const int ULTRASONIC_LEFT = 1;
+        static const int ULTRASONIC_RIGHT = 2;
+        static const int ULTRASONIC_BACK = 3;
+
+    public:
         Ultrasonic_Wrapper(unsigned int trigPin,
                            unsigned int* echoPins,
                            unsigned int* burstFrequencies,
