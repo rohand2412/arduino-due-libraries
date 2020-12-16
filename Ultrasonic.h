@@ -5,8 +5,8 @@ class Ultrasonic
 {
     private:
         const unsigned int 
-            _echoPin, 
             _trigPin,
+            _echoPin,
             _burstFrequencyMS;
         
         unsigned int
