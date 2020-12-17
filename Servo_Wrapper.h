@@ -5,21 +5,21 @@
 class Servo_Wrapper : public Servo
 {
     private:
-        int _lowerBound;
-        int _upperBound;
+        const volatile unsigned int _LOWER_BOUND;
+        const volatile unsigned int _UPPER_BOUND;
     
     public:
         Servo_Wrapper();
 
-        void write(int value);
+        void write(unsigned int value);
 
         void writeMicroseconds(int value) = delete; //Only method to set degree should be write()
 
         int readMicroseconds() = delete;    //Unnecessary without writeMicroseconds()
 
-        void setBounds(int lowerBound, int upperBound);
+        void setBounds(unsigned int lowerBound, unsigned int upperBound);
 
-        int getLowerBound() const;
+        unsigned int getLowerBound() const;
 
-        int getUpperBound() const;
+        unsigned int getUpperBound() const;
 };

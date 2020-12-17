@@ -1,31 +1,28 @@
 #include "Servo_Wrapper.h"
 
-Servo_Wrapper::Servo_Wrapper() : Servo()
-{
-    _lowerBound = 0;
-    _upperBound = 180;
-}
+Servo_Wrapper::Servo_Wrapper() : Servo(), _LOWER_BOUND(0), _UPPER_BOUND(180){}; 
 
-void Servo_Wrapper::write(int value)
+void Servo_Wrapper::write(unsigned int value)
 {
-    value = (value < 0) ? 0 : value;                        //Make sure its positive
-    value += _lowerBound;                                   //Translate angle to bound range
-    value = (value > _upperBound) ? _upperBound : value;    //Cap value at _upperBound
+    value += _LOWER_BOUND;                                  //Translate angle to bound range
+    value = (value > _UPPER_BOUND) ? _UPPER_BOUND : value;  //Cap value at _upperBound
     Servo::write(value);                                    //Pass value to Servo::write()
 }
 
-void Servo_Wrapper::setBounds(int lowerBound, int upperBound)
+void Servo_Wrapper::setBounds(unsigned int lowerBound, unsigned int upperBound)
 {
-    _lowerBound = lowerBound;
-    _upperBound = upperBound;
+    unsigned int& lb = const_cast <unsigned int &> (_LOWER_BOUND);
+    lb = lowerBound;
+    unsigned int &ub = const_cast <unsigned int &> (_UPPER_BOUND);
+    ub = upperBound;
 }
 
-int Servo_Wrapper::getLowerBound() const
+unsigned int Servo_Wrapper::getLowerBound() const
 {
-    return _lowerBound;
+    return _LOWER_BOUND;
 }
 
-int Servo_Wrapper::getUpperBound() const
+unsigned int Servo_Wrapper::getUpperBound() const
 {
-    return _upperBound;
+    return _UPPER_BOUND;
 }
