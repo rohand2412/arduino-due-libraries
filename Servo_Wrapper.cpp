@@ -6,23 +6,23 @@ Servo_Wrapper::Servo_Wrapper(unsigned int lowerBound /*= 0*/,
                              _LOWER_BOUND(lowerBound), 
                              _UPPER_BOUND(upperBound)
 {
-    _value = 0xFFFFFFFF;    //_value = -1
+    _angle = 0xFFFFFFFF;    //_angle = -1
 };
 
-void Servo_Wrapper::write(unsigned int value)
+void Servo_Wrapper::write(unsigned int angle)
 {
-    _value = value;
-    value += _LOWER_BOUND;                                  //Translate angle to bound range
-    value = (value > _UPPER_BOUND) ? _UPPER_BOUND : value;  //Cap value at _upperBound
-    Servo::write(value); //Pass value to Servo::write()
+    _angle = angle;
+    angle += _LOWER_BOUND;                                  //Translate angle to bound range
+    angle = (angle > _UPPER_BOUND) ? _UPPER_BOUND : angle;  //Cap angle at _upperBound
+    Servo::write(angle);                                    //Pass angle to Servo::write()
 }
 
 unsigned int Servo_Wrapper::read() const
 {
     //Need to pass RGB LED object to class when RGB class completed
-    //Flash Red if read is called before _value is initialized
+    //Flash Red if read is called before _angle is initialized
     //Until then Serial Port will be only form of indication
-    if (_value == 0xFFFFFFFF)   //_value == -1
+    if (_angle == 0xFFFFFFFF)   //_angle == -1
     {
         while(true)
         {
@@ -30,7 +30,7 @@ unsigned int Servo_Wrapper::read() const
             Serial.println("initialization of Servo_Wrapper::write()");
         }
     }
-    return _value;
+    return _angle;
 }
 
 unsigned int Servo_Wrapper::getLowerBound() const
