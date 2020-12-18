@@ -16,6 +16,11 @@ For now, please note that we did not write the following libraries and that if y
  - Servo.h
  - ServoTimers.h
  - ArduinoTrace.h
+ - Encoder.cpp
+ - Encoder.h
+ - direct_pin_read.h
+ - interrupt_config.h
+ - interrupt_pins.h
 
  We did however write the following libraries.
  - IMU.cpp
