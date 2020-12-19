@@ -22,7 +22,7 @@ class Encoder_Wrapper
 
         void setCount(long int newCount, size_t sensor = 0);
 
-        void resetCount(size_t sensor = 1000);
+        void resetCount(size_t sensor = 0xFFFFFFFF);    //value = -1
 
         long int getCount(size_t sensor = 0);
 

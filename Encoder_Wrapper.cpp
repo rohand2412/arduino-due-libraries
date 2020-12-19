@@ -56,9 +56,9 @@ void Encoder_Wrapper::setCount(long int newCount, size_t sensor /*= 0*/)
     _resetCounts[sensor] = _encodersPtr[sensor]->read();
 }
 
-void Encoder_Wrapper::resetCount(size_t sensor /*= -1*/)
+void Encoder_Wrapper::resetCount(size_t sensor /*= 0xFFFFFFFF*/)    //sensor = -1
 {
-    if (sensor == 1000)
+    if (sensor == 0xFFFFFFFF)   //sensor == -1
     {
         for (size_t i = 0; i < _sensorNum; i++)
         {
