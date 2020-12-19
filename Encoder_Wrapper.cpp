@@ -15,10 +15,12 @@ Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum)
     _sensorNum = sensorNum;
     _resetCounts = new long int[_sensorNum];
     _setCounts = new long int[_sensorNum];
+    _indices = new size_t[_sensorNum];
     for (size_t i = 0; i < _sensorNum; i++)
     {
         _resetCounts[i] = 0;
         _setCounts[i] = 0;
+        _indices[i] = i;
     }
 
     if (_instanceNum == 1)
@@ -88,6 +90,12 @@ Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum)
                                           _pins[i * _pinsPerSensor + 1]);
         }
 
+        //Set up index translator due to varying order of pin input
+        for (size_t i = 0; i < _sensorNum; i++)
+        {
+            _indices[i] = _find(pins, i, _pins, _totalSensorNum);
+        }
+
         //Delete just old array not what it contained
         delete[] encodersPtr;
         delete[] oldPins;
@@ -108,12 +116,13 @@ Encoder_Wrapper::~Encoder_Wrapper()
     _instanceNum--;
     delete[] _resetCounts;
     delete[] _setCounts;
+    delete[] _indices;
 }
 
 void Encoder_Wrapper::setCount(long int newCount, size_t sensor /*= 0*/)
 {
-    _setCounts[sensor] = newCount;
-    _resetCounts[sensor] = _encodersPtr[sensor]->read();
+    _setCounts[_indices[sensor]] = newCount;
+    _resetCounts[_indices[sensor]] = _encodersPtr[_indices[sensor]]->read();
 }
 
 void Encoder_Wrapper::resetCount(size_t sensor /*= 0xFFFFFFFF*/)    //sensor = -1
@@ -122,23 +131,23 @@ void Encoder_Wrapper::resetCount(size_t sensor /*= 0xFFFFFFFF*/)    //sensor = -
     {
         for (size_t i = 0; i < _sensorNum; i++)
         {
-            setCount(0, i);
+            setCount(0, _indices[i]);
         }
     }
     else
     {
-        setCount(0, sensor);
+        setCount(0, _indices[sensor]);
     }
 }
 
 long int Encoder_Wrapper::getCount(size_t sensor /*= 0*/)
 {
-    return _encodersPtr[sensor]->read() - _resetCounts[sensor] + _setCounts[sensor];
+    return _encodersPtr[_indices[sensor]]->read() - _resetCounts[_indices[sensor]] + _setCounts[_indices[sensor]];
 }
 
 unsigned int Encoder_Wrapper::getPin(size_t sensor /*= 0*/, size_t index /*= 0*/)
 {
-    return _pins[sensor * _pinsPerSensor + index];
+    return _pins[_indices[sensor] * _pinsPerSensor + index];
 }
 
 size_t Encoder_Wrapper::_find(unsigned int* newPins, size_t newSensorIndex, unsigned int *oldPins, size_t oldSensorNum)

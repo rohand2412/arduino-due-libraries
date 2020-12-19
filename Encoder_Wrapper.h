@@ -15,6 +15,7 @@ class Encoder_Wrapper
 
         long int *_resetCounts;
         long int *_setCounts;
+        size_t *_indices;
 
     public:
         Encoder_Wrapper(unsigned int* pins, size_t sensorNum);
