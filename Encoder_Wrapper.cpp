@@ -59,7 +59,16 @@ Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum)
         }
 
         //skipIndex at which pair of pins repeats
-        size_t skipIndex = _find(pins, newSensorNum, oldPins, oldSensorNum);
+        size_t skipIndex = 0xFFFFFFFF;  //skipIndex = -1
+        for (size_t i = 0; i < newSensorNum; i++)
+        {
+            if (_find(pins, i, oldPins, oldSensorNum) != 0xFFFFFFFF)    //!= -1
+            {
+                skipIndex = i;
+            }
+        }
+
+        //Placeholder in case an index needs to be skipped
         size_t pinsIndex;
 
         //Add new Encoder to new memory
@@ -132,39 +141,23 @@ unsigned int Encoder_Wrapper::getPin(size_t sensor /*= 0*/, size_t index /*= 0*/
     return _pins[sensor * _pinsPerSensor + index];
 }
 
-size_t Encoder_Wrapper::_find(unsigned int* newPins, size_t newSensorNum, unsigned int *oldPins, size_t oldSensorNum)
+size_t Encoder_Wrapper::_find(unsigned int* newPins, size_t newSensorIndex, unsigned int *oldPins, size_t oldSensorNum)
 {
-    //found var for breaking twice
-    bool found = false;
-
-    //Initialized outside so they can be returned
-    size_t newSensor = 0;
+    //Intialized outside for returning
     size_t oldSensor = 0;
 
-    //Iterate through new pin data
-    for (newSensor = 0; newSensor < newSensorNum; newSensor++)
+    //Iterate through old pin data
+    for (oldSensor = 0; oldSensor < oldSensorNum; oldSensor++)
     {
-        //Iterate through old pin data
-        for (oldSensor = 0; oldSensor < oldSensorNum; oldSensor++)
+        //Compare old data to new data check for similarity
+        if((oldPins[oldSensor * _pinsPerSensor] == newPins[newSensorIndex * _pinsPerSensor]) 
+        && (oldPins[oldSensor * _pinsPerSensor + 1] == newPins[newSensorIndex * _pinsPerSensor + 1]))
         {
-            //Compare old data to new data check for similarity
-            if((oldPins[oldSensor * _pinsPerSensor] == newPins[newSensor * _pinsPerSensor]) 
-            && (oldPins[oldSensor * _pinsPerSensor + 1] == newPins[newSensor * _pinsPerSensor + 1]))
-            {
-                //Indicate double break
-                found = true;
-                break;
-            }
-        }
-
-        //Check for double break flag
-        if (found)
-        {
-            //Break out of parent loop
-            break;
+            //Return true if match found
+            return oldSensor;
         }
     }
 
-    //Return index of repeated pair
-    return newSensor;
+    //Return -1 if no match found
+    return 0xFFFFFFFFF;
 }
