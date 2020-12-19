@@ -3,7 +3,7 @@
 
 unsigned int Encoder_Wrapper::_instanceNum = 0;
 
-size_t Encoder_Wrapper::_sensorNum = -1;
+size_t Encoder_Wrapper::_totalSensorNum = -1;
 
 Encoder **Encoder_Wrapper::_encodersPtr;
 
@@ -11,43 +11,69 @@ unsigned int *Encoder_Wrapper::_pins;
 
 Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum)
 {
-    _sensorNum = sensorNum;
     _instanceNum++;
-
-    _encodersPtr = new Encoder *[_sensorNum];
-    _pins = new unsigned int[_sensorNum * _pinsPerSensor];
+    _sensorNum = sensorNum;
     _resetCounts = new long int[_sensorNum];
     _setCounts = new long int[_sensorNum];
     for (size_t i = 0; i < _sensorNum; i++)
     {
-        _pins[i * _pinsPerSensor] = pins[i * _pinsPerSensor];
-        _pins[i * _pinsPerSensor + 1] = pins[i * _pinsPerSensor + 1];
-        _encodersPtr[i] = new Encoder(_pins[i * _pinsPerSensor],
-                                      _pins[i * _pinsPerSensor + 1]);
         _resetCounts[i] = 0;
         _setCounts[i] = 0;
+    }
+
+    if (_instanceNum == 1)
+    {
+        _totalSensorNum = _sensorNum;
+        _encodersPtr = new Encoder *[_totalSensorNum];
+        _pins = new unsigned int[_totalSensorNum * _pinsPerSensor];
+        for (size_t i = 0; i < _totalSensorNum; i++)
+        {
+            _pins[i * _pinsPerSensor] = pins[i * _pinsPerSensor];
+            _pins[i * _pinsPerSensor + 1] = pins[i * _pinsPerSensor + 1];
+            _encodersPtr[i] = new Encoder(_pins[i * _pinsPerSensor],
+                                          _pins[i * _pinsPerSensor + 1]);
+            
+        }
+    }
+    else if (_sensorNum > _totalSensorNum) 
+    {
+        Encoder **encodersPtr = _encodersPtr;
+        unsigned int *oldPins = _pins;
+        _encodersPtr = new Encoder *[_sensorNum];
+        _pins = new unsigned int[_sensorNum * _pinsPerSensor];
+        for (size_t i = 0; i < _totalSensorNum; i++)
+        {
+            _pins[i * _pinsPerSensor] = oldPins[i * _pinsPerSensor];
+            _pins[i * _pinsPerSensor + 1] = oldPins[i * _pinsPerSensor + 1];
+            _encodersPtr[i] = encodersPtr[i];
+        }
+        for (size_t i = _totalSensorNum; i < _sensorNum; i++)
+        {
+            _pins[i * _pinsPerSensor] = pins[(i - _totalSensorNum) * _pinsPerSensor];
+            _pins[i * _pinsPerSensor + 1] = pins[(i - _totalSensorNum) * _pinsPerSensor + 1];
+            _encodersPtr[i] = new Encoder(_pins[i * _pinsPerSensor],
+                                          _pins[i * _pinsPerSensor + 1]);
+        }
+        _totalSensorNum = _sensorNum;
+        delete[] encodersPtr;
+        delete[] oldPins;
     }
 }
 
 Encoder_Wrapper::~Encoder_Wrapper()
 {
-    if(_instanceNum == 1)
+    if (_instanceNum == 1)
     {
-        _instanceNum--;
-
-        for (size_t i = 0; i < _sensorNum; i++)
+        for (size_t i = 0; i < _totalSensorNum; i++)
         {
             delete _encodersPtr[i];
         }
         delete[] _encodersPtr;
         delete[] _pins;
-        delete[] _resetCounts;
-        delete[] _setCounts;
     }
-    else
-    {
-        _instanceNum--;
-    }
+    _instanceNum--;
+    delete[] _resetCounts;
+    delete[] _setCounts;
 }
 
 void Encoder_Wrapper::setCount(long int newCount, size_t sensor /*= 0*/)

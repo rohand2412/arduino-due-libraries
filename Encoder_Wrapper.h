@@ -8,7 +8,8 @@ class Encoder_Wrapper
         static unsigned int _instanceNum;
         static const unsigned int _pinsPerSensor = 2;
 
-        static size_t _sensorNum;
+        static size_t _totalSensorNum;
+        size_t _sensorNum = -1;
         static Encoder **_encodersPtr;
         static unsigned int *_pins;
 
