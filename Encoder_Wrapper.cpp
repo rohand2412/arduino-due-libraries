@@ -164,7 +164,7 @@ long int Encoder_Wrapper::getCount(size_t sensor /*= 0*/)
     return _encodersPtr[_indices[sensor]]->read() - _resetCounts[sensor] + _setCounts[sensor];
 }
 
-unsigned int Encoder_Wrapper::getPin(size_t sensor /*= 0*/, size_t index /*= 0*/)
+unsigned int Encoder_Wrapper::getPin(size_t sensor /*= 0*/, size_t index /*= 0*/) const
 {
     return _pins[_indices[sensor] * _pinsPerSensor + index];
 }

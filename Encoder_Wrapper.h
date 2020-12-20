@@ -28,7 +28,7 @@ class Encoder_Wrapper
 
         long int getCount(size_t sensor = 0);
 
-        unsigned int getPin(size_t sensor = 0, size_t index = 0);
+        unsigned int getPin(size_t sensor = 0, size_t index = 0) const;
     
     private:
         static size_t _find(unsigned int *newPins, size_t newSensorIndex,
