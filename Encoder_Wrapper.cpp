@@ -168,5 +168,5 @@ size_t Encoder_Wrapper::_find(unsigned int* newPins, size_t newSensorIndex, unsi
     }
 
     //Return -1 if no match found
-    return 0xFFFFFFFFF;
+    return 0xFFFFFFFF;
 }
