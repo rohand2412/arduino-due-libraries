@@ -31,6 +31,6 @@ class Encoder_Wrapper
         unsigned int getPin(size_t sensor = 0, size_t index = 0);
     
     private:
-        size_t _find(unsigned int *newPins, size_t newSensorIndex,
-                     unsigned int *oldPins, size_t oldSensorNum);
+        static size_t _find(unsigned int *newPins, size_t newSensorIndex,
+                            unsigned int *oldPins, size_t oldSensorNum);
 };
