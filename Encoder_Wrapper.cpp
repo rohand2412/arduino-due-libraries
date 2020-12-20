@@ -152,11 +152,8 @@ unsigned int Encoder_Wrapper::getPin(size_t sensor /*= 0*/, size_t index /*= 0*/
 
 size_t Encoder_Wrapper::_find(unsigned int* newPins, size_t newSensorIndex, unsigned int *oldPins, size_t oldSensorNum)
 {
-    //Intialized outside for returning
-    size_t oldSensor = 0;
-
     //Iterate through old pin data
-    for (oldSensor = 0; oldSensor < oldSensorNum; oldSensor++)
+    for (size_t oldSensor = 0; oldSensor < oldSensorNum; oldSensor++)
     {
         //Compare old data to new data check for similarity
         if((oldPins[oldSensor * _pinsPerSensor] == newPins[newSensorIndex * _pinsPerSensor]) 
@@ -173,11 +170,8 @@ size_t Encoder_Wrapper::_find(unsigned int* newPins, size_t newSensorIndex, unsi
 
 size_t Encoder_Wrapper::_find(size_t newPinIndex, size_t *oldPinIndices, size_t oldPinIndicesNum)
 {
-    //Initialized outside for returning
-    size_t oldPin = 0;
-
     //Iterate through old pin index data
-    for (oldPin = 0; oldPin < oldPinIndicesNum; oldPin++)
+    for (size_t oldPin = 0; oldPin < oldPinIndicesNum; oldPin++)
     {
         //Compare to old data to new data check for similarity
         if (newPinIndex == oldPinIndices[oldPin])
