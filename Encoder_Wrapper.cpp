@@ -170,3 +170,23 @@ size_t Encoder_Wrapper::_find(unsigned int* newPins, size_t newSensorIndex, unsi
     //Return -1 if no match found
     return 0xFFFFFFFF;
 }
+
+size_t Encoder_Wrapper::_find(size_t newPinIndex, size_t *oldPinIndices, size_t oldPinIndicesNum)
+{
+    //Initialized outside for returning
+    size_t oldPin = 0;
+
+    //Iterate through old pin index data
+    for (oldPin = 0; oldPin < oldPinIndicesNum; oldPin++)
+    {
+        //Compare to old data to new data check for similarity
+        if (newPinIndex == oldPinIndices[oldPin])
+        {
+            //Return running iterator if match found
+            return oldPin;
+        }
+    }
+
+    //Return -1 if no match found
+    return 0xFFFFFFFF;
+}

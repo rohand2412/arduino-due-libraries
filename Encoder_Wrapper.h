@@ -33,4 +33,6 @@ class Encoder_Wrapper
     private:
         static size_t _find(unsigned int *newPins, size_t newSensorIndex,
                             unsigned int *oldPins, size_t oldSensorNum);
+        static size_t _find(size_t newPinIndex, size_t *oldPinIndices,
+                            size_t oldPinIndicesNum);
 };
