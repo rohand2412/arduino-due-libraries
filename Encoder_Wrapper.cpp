@@ -175,6 +175,12 @@ size_t Encoder_Wrapper::getSensorNum() const
     return _sensorNum;
 }
 
+size_t Encoder_Wrapper::getTotalSensorNum()
+{
+    //Return class wide number of encoders
+    return _totalSensorNum;
+}
+
 size_t Encoder_Wrapper::_find(unsigned int* newPins, size_t newSensorIndex, unsigned int *oldPins, size_t oldSensorNum)
 {
     //Iterate through old pin data
