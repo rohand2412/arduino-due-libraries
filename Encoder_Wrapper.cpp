@@ -169,6 +169,12 @@ unsigned int Encoder_Wrapper::getPin(size_t sensor /*= 0*/, size_t index /*= 0*/
     return _pins[_indices[sensor] * _pinsPerSensor + index];
 }
 
+size_t Encoder_Wrapper::getSensorNum() const
+{
+    //Return instance specific number of encoders
+    return _sensorNum;
+}
+
 size_t Encoder_Wrapper::_find(unsigned int* newPins, size_t newSensorIndex, unsigned int *oldPins, size_t oldSensorNum)
 {
     //Iterate through old pin data
