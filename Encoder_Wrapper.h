@@ -6,7 +6,7 @@ class Encoder_Wrapper
 {
     private:
         static unsigned int _instanceNum;
-        static const unsigned int _pinsPerSensor = 2;
+        static const size_t _pinsPerSensor = 2;
 
         static size_t _totalSensorNum;
         size_t _sensorNum = -1;
@@ -35,7 +35,7 @@ class Encoder_Wrapper
         static size_t getTotalSensorNum();
 
     private:
-        static size_t _find(unsigned int *newPins, size_t newSensorIndex,
+        static size_t _find(unsigned int& newPins, size_t newPinLen,
                             unsigned int *oldPins, size_t oldSensorNum);
         static size_t _find(size_t newPinIndex, size_t *oldPinIndices,
                             size_t oldPinIndicesNum);

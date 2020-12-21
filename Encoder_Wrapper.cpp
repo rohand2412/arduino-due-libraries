@@ -11,37 +11,46 @@ unsigned int *Encoder_Wrapper::_pins;
 
 Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum)
 {
+    //Log initialization of new instance
     _instanceNum++;
+
+    //Store number of sensors
     _sensorNum = sensorNum;
+
+    //Declare class specific data
     _resetCounts = new long int[_sensorNum];
     _setCounts = new long int[_sensorNum];
-
-    //Check if _totalSensorNum is initialized
-    if (_instanceNum == 1)
-    {
-        //Initialize _totalSensorNum
-        _totalSensorNum = _sensorNum;
-    }
-
-    size_t skipIndices[_sensorNum];
-    size_t skipIndicesNum = 0;
     for (size_t i = 0; i < _sensorNum; i++)
     {
+        //Initialize data
         _resetCounts[i] = 0;
         _setCounts[i] = 0;
+    }
 
-        //Check if pin pair is repeated
-        if (_find(pins, i, _pins, _totalSensorNum) != 0xFFFFFFFF)   //!= -1
+    //Declare array of skipIndices and its length
+    size_t skipIndices[_sensorNum];
+    size_t skipIndicesNum = 0;
+
+    //Check if this is not the first instance
+    if (_instanceNum != 1)
+    {
+        //Iterate through encoders
+        for (size_t i = 0; i < _sensorNum; i++)
         {
-            //Store which index is repeated
-            skipIndices[skipIndicesNum] = i;
-            //Store how many are repeated
-            skipIndicesNum++;
+            //Check if pin pair is repeated
+            if (_find(pins[i * _pinsPerSensor], _pinsPerSensor, _pins, _totalSensorNum) != 0xFFFFFFFF)   //!= -1
+            {
+                //Store which index is repeated
+                skipIndices[skipIndicesNum] = i;
+                //Store how many are repeated
+                skipIndicesNum++;
+            }
         }
     }
 
     if (_instanceNum == 1)
     {
+        _totalSensorNum = _sensorNum;
         _encodersPtr = new Encoder *[_totalSensorNum];
         _pins = new unsigned int[_totalSensorNum * _pinsPerSensor];
         for (size_t i = 0; i < _totalSensorNum; i++)
@@ -109,7 +118,7 @@ Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum)
     _indices = new size_t[_sensorNum];
     for (size_t i = 0; i < _sensorNum; i++)
     {
-        _indices[i] = _find(pins, i, _pins, _totalSensorNum);
+        _indices[i] = _find(pins[i * _pinsPerSensor], _pinsPerSensor, _pins, _totalSensorNum);
     }
 }
 
@@ -181,14 +190,29 @@ size_t Encoder_Wrapper::getTotalSensorNum()
     return _totalSensorNum;
 }
 
-size_t Encoder_Wrapper::_find(unsigned int* newPins, size_t newSensorIndex, unsigned int *oldPins, size_t oldSensorNum)
+size_t Encoder_Wrapper::_find(unsigned int& newPins, size_t newPinLen, unsigned int *oldPins, size_t oldSensorNum)
 {
+    //Convert first pin to pin pair array
+    unsigned int *newPinsPtr = &newPins;
+
+    //Pin iterator initialized where loop won't destroy it
+    size_t newPin = 0;
+
     //Iterate through old pin data
     for (size_t oldSensor = 0; oldSensor < oldSensorNum; oldSensor++)
     {
-        //Compare old data to new data check for similarity
-        if((oldPins[oldSensor * _pinsPerSensor] == newPins[newSensorIndex * _pinsPerSensor]) 
-        && (oldPins[oldSensor * _pinsPerSensor + 1] == newPins[newSensorIndex * _pinsPerSensor + 1]))
+        for (newPin = 0; newPin < newPinLen; newPin++)
+        {
+            //Compare old data to new data check for similarity
+            if (oldPins[oldSensor * _pinsPerSensor + newPin] != newPinsPtr[newPin])
+            {
+                //Freeze newPin at current iteration value
+                break;
+            }
+        }
+
+        //Check if loop wasn't broken and all pins matched
+        if (newPin == newPinLen)
         {
             //Return running iterator if match found
             return oldSensor;
@@ -201,17 +225,9 @@ size_t Encoder_Wrapper::_find(unsigned int* newPins, size_t newSensorIndex, unsi
 
 size_t Encoder_Wrapper::_find(size_t newPinIndex, size_t *oldPinIndices, size_t oldPinIndicesNum)
 {
-    //Iterate through old pin index data
-    for (size_t oldPin = 0; oldPin < oldPinIndicesNum; oldPin++)
-    {
-        //Compare to old data to new data check for similarity
-        if (newPinIndex == oldPinIndices[oldPin])
-        {
-            //Return running iterator if match found
-            return oldPin;
-        }
-    }
+    //Index will always be only one number
+    const size_t indexNum = 1;
 
-    //Return -1 if no match found
-    return 0xFFFFFFFF;
+    //Use other version of find to search for singular values as well
+    return _find(newPinIndex, indexNum, oldPinIndices, oldPinIndicesNum);
 }
