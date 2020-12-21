@@ -139,7 +139,7 @@ Encoder_Wrapper::~Encoder_Wrapper()
     delete[] _indices;
 }
 
-void Encoder_Wrapper::setCount(long int newCount, size_t sensor /*= 0*/)
+void Encoder_Wrapper::setCount(size_t sensor, long int newCount)
 {
     //Store new count that encoder was set to
     _setCounts[sensor] = newCount;
@@ -156,13 +156,13 @@ void Encoder_Wrapper::resetCount(size_t sensor /*= 0xFFFFFFFF*/)    //sensor = -
         for (size_t i = 0; i < _sensorNum; i++)
         {
             //Set each encoder to zero
-            setCount(0, i);
+            setCount(i, 0);
         }
     }
     else
     {
         //Set specific encoder to zero
-        setCount(0, sensor);
+        setCount(sensor, 0);
     }
 }
 
