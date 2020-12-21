@@ -141,6 +141,8 @@ Encoder_Wrapper::~Encoder_Wrapper()
 
 void Encoder_Wrapper::setCount(size_t sensor, long int newCount)
 {
+    //Prevent array overflow
+    sensor = _indexCap(sensor, _sensorNum);
     //Store new count that encoder was set to
     _setCounts[sensor] = newCount;
     //Store count at which encoder was reset
@@ -161,6 +163,9 @@ void Encoder_Wrapper::resetCount(size_t sensor /*= 0xFFFFFFFF*/)    //sensor = -
     }
     else
     {
+        //Prevent array overflow
+        sensor = _indexCap(sensor, _sensorNum);
+
         //Set specific encoder to zero
         setCount(sensor, 0);
     }
@@ -168,6 +173,9 @@ void Encoder_Wrapper::resetCount(size_t sensor /*= 0xFFFFFFFF*/)    //sensor = -
 
 long int Encoder_Wrapper::getCount(size_t sensor /*= 0*/)
 {
+    //Prevent array overflow
+    sensor = _indexCap(sensor, _sensorNum);
+
     //Return count by taking the delta of current reading and reset
     //Then adding the delta to the count that the encoder was set to
     return _encodersPtr[_indices[sensor]]->read() - _resetCounts[sensor] + _setCounts[sensor];
@@ -175,6 +183,11 @@ long int Encoder_Wrapper::getCount(size_t sensor /*= 0*/)
 
 unsigned int Encoder_Wrapper::getPin(size_t sensor /*= 0*/, size_t index /*= 0*/) const
 {
+    //Prevent array overflow
+    sensor = _indexCap(sensor, _sensorNum);
+    index = _indexCap(index, _pinsPerSensor);
+
+    //Return specified pin
     return _pins[_indices[sensor] * _pinsPerSensor + index];
 }
 
@@ -230,4 +243,19 @@ size_t Encoder_Wrapper::_find(size_t newPinIndex, size_t *oldPinIndices, size_t 
 
     //Use other version of find to search for singular values as well
     return _find(newPinIndex, indexNum, oldPinIndices, oldPinIndicesNum);
+}
+
+size_t Encoder_Wrapper::_indexCap(size_t index, size_t maxIndex)
+{
+    //Indices start at 0 so minus 1 is max index value
+    maxIndex -= 1;
+
+    //Make sure index is positive
+    index = (index < 0) ? 0 : index;
+
+    //Make sure index doesn't exceed maxIndex
+    index = (index >= maxIndex) ? maxIndex : index;
+
+    //Return index
+    return index;
 }
