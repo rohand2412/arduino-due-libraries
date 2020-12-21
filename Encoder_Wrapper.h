@@ -18,7 +18,7 @@ class Encoder_Wrapper
         size_t *_indices;
 
     public:
-        Encoder_Wrapper(unsigned int* pins, size_t sensorNum);
+        Encoder_Wrapper(unsigned int* pins, size_t sensorNum = 1);
 
         ~Encoder_Wrapper();
 

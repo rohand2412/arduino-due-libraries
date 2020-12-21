@@ -9,7 +9,7 @@ Encoder **Encoder_Wrapper::_encodersPtr;
 
 unsigned int *Encoder_Wrapper::_pins;
 
-Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum)
+Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum /*= 1*/)
 {
     //Log initialization of new instance
     _instanceNum++;
