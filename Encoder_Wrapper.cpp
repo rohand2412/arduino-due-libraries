@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "Encoder_Wrapper.h"
 
+//Initialize static variables
 unsigned int Encoder_Wrapper::_instanceNum = 0;
 
 size_t Encoder_Wrapper::_totalSensorNum = -1;
@@ -20,11 +21,11 @@ Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum /*= 1*/)
     //Declare class specific data
     _resetCounts = new long int[_sensorNum];
     _setCounts = new long int[_sensorNum];
-    for (size_t i = 0; i < _sensorNum; i++)
+    for (size_t sensor = 0; sensor < _sensorNum; sensor++)
     {
         //Initialize data
-        _resetCounts[i] = 0;
-        _setCounts[i] = 0;
+        _resetCounts[sensor] = 0;
+        _setCounts[sensor] = 0;
     }
 
     //Declare array of skipIndices and its length
@@ -34,14 +35,14 @@ Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum /*= 1*/)
     //Check if this is not the first instance
     if (_instanceNum != 1)
     {
-        //Iterate through encoders
-        for (size_t i = 0; i < _sensorNum; i++)
+        //Iterate through sensors
+        for (size_t sensor = 0; sensor < _sensorNum; sensor++)
         {
             //Check if pin pair is repeated
-            if (_find(pins[i * _pinsPerSensor], _pinsPerSensor, _pins, _totalSensorNum) != 0xFFFFFFFF)   //!= -1
+            if (_find(pins[sensor * _pinsPerSensor], _pinsPerSensor, _pins, _totalSensorNum) != 0xFFFFFFFF)   //!= -1
             {
                 //Store which index is repeated
-                skipIndices[skipIndicesNum] = i;
+                skipIndices[skipIndicesNum] = sensor;
                 //Store how many are repeated
                 skipIndicesNum++;
             }
@@ -74,8 +75,8 @@ Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum /*= 1*/)
         //Separate index for new pins in a skip of index is necessary
         size_t pinsIndex = 0;
 
-        //Add new Encoder to new memory
-        for (size_t i = oldSensorNum; i < newSensorNum; i++)
+        //Add new sensors to new memory
+        for (size_t sensor = oldSensorNum; sensor < newSensorNum; sensor++)
         {
             //Increase until index is not one to skip
             while (_find(pinsIndex, skipIndices, skipIndicesNum) != 0xFFFFFFFF) //!= -1
@@ -85,10 +86,10 @@ Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum /*= 1*/)
             }
 
             //Populate new memory with new data
-            _pins[i * _pinsPerSensor] = pins[pinsIndex * _pinsPerSensor];
-            _pins[i * _pinsPerSensor + 1] = pins[pinsIndex * _pinsPerSensor + 1];
-            _encodersPtr[i] = new Encoder(_pins[i * _pinsPerSensor],
-                                          _pins[i * _pinsPerSensor + 1]);
+            _pins[sensor * _pinsPerSensor] = pins[pinsIndex * _pinsPerSensor];
+            _pins[sensor * _pinsPerSensor + 1] = pins[pinsIndex * _pinsPerSensor + 1];
+            _encodersPtr[sensor] = new Encoder(_pins[sensor * _pinsPerSensor],
+                                               _pins[sensor * _pinsPerSensor + 1]);
 
             //Move to next pin pair
             pinsIndex++;
@@ -101,24 +102,33 @@ Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum /*= 1*/)
 
     //Initialize index translator due to varying order of pin input
     _indices = new size_t[_sensorNum];
-    for (size_t i = 0; i < _sensorNum; i++)
+    for (size_t sensor = 0; sensor < _sensorNum; sensor++)
     {
-        _indices[i] = _find(pins[i * _pinsPerSensor], _pinsPerSensor, _pins, _totalSensorNum);
+        _indices[sensor] = _find(pins[sensor * _pinsPerSensor], _pinsPerSensor, _pins, _totalSensorNum);
     }
 }
 
 Encoder_Wrapper::~Encoder_Wrapper()
 {
+    //Check if this is only or last instance left
     if (_instanceNum == 1)
     {
-        for (size_t i = 0; i < _totalSensorNum; i++)
+        //Iterate through sensors
+        for (size_t sensor = 0; sensor < _totalSensorNum; sensor++)
         {
-            delete _encodersPtr[i];
+            //Destroy each individual sensor
+            delete _encodersPtr[sensor];
         }
+
+        //Destroy encapsulating arrays
         delete[] _encodersPtr;
         delete[] _pins;
     }
+
+    //Subtract this instance from total
     _instanceNum--;
+
+    //Destory all instance specific data
     delete[] _resetCounts;
     delete[] _setCounts;
     delete[] _indices;
@@ -139,11 +149,11 @@ void Encoder_Wrapper::resetCount(size_t sensor /*= 0xFFFFFFFF*/)    //sensor = -
     //Check if parameter was not entered
     if (sensor == 0xFFFFFFFF) //sensor == -1
     {
-        //Iterate through encoders
-        for (size_t i = 0; i < _sensorNum; i++)
+        //Iterate through sensors
+        for (size_t sensor = 0; sensor < _sensorNum; sensor++)
         {
             //Set each encoder to zero
-            setCount(i, 0);
+            setCount(sensor, 0);
         }
     }
     else
@@ -252,13 +262,13 @@ void Encoder_Wrapper::_construct(unsigned int *pins, size_t newSensorNum, size_t
     _pins = new unsigned int[newSensorNum * _pinsPerSensor];
 
     //Iterate through sensors
-    for (size_t i = 0; i < oldSensorNum; i++)
+    for (size_t oldSensor = 0; oldSensor < oldSensorNum; oldSensor++)
     {
         //Populate allocated memory
-        _pins[i * _pinsPerSensor] = pins[i * _pinsPerSensor];
-        _pins[i * _pinsPerSensor + 1] = pins[i * _pinsPerSensor + 1];
-        _encodersPtr[i] = new Encoder(_pins[i * _pinsPerSensor],
-                                      _pins[i * _pinsPerSensor + 1]);
+        _pins[oldSensor * _pinsPerSensor] = pins[oldSensor * _pinsPerSensor];
+        _pins[oldSensor * _pinsPerSensor + 1] = pins[oldSensor * _pinsPerSensor + 1];
+        _encodersPtr[oldSensor] = new Encoder(_pins[oldSensor * _pinsPerSensor],
+                                              _pins[oldSensor * _pinsPerSensor + 1]);
     }
 }
 
