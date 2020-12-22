@@ -18,6 +18,12 @@ class Encoder_Wrapper
         size_t *_indices;
 
     public:
+        static const size_t ENCODER_LEFT = 0;
+        static const size_t ENCODER_RIGHT = 1;
+        static const size_t ENCODER_OUT_A = 0;
+        static const size_t ENCODER_OUT_B = 1;
+
+    public:
         Encoder_Wrapper(unsigned int* pins, size_t sensorNum = 1);
 
         ~Encoder_Wrapper();
