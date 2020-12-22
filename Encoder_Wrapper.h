@@ -25,9 +25,13 @@ class Encoder_Wrapper
         static const size_t ENCODER_OUT_B = 1;
 
     public:
+        Encoder_Wrapper();
+
         Encoder_Wrapper(unsigned int* pins, size_t sensorNum = 1);
 
         ~Encoder_Wrapper();
+
+        void begin(unsigned int *pins, size_t sensorNum = 1);
 
         void setCount(size_t sensor, long int newCount); //No default param in order to preserve order of params
 

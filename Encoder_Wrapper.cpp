@@ -10,7 +10,15 @@ Encoder **Encoder_Wrapper::_encodersPtr;
 
 unsigned int *Encoder_Wrapper::_pins;
 
+Encoder_Wrapper::Encoder_Wrapper(){};
+
 Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum /*= 1*/)
+{
+    //Fill and initialize instance
+    begin(pins, sensorNum);
+}
+
+void Encoder_Wrapper::begin(unsigned int* pins, size_t sensorNum /*= 1*/)
 {
     //Log initialization of new instance
     _instanceNum++;
