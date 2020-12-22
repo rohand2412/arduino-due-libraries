@@ -38,9 +38,9 @@ class Encoder_Wrapper
 
         void resetCount(size_t sensor = 0xFFFFFFFF);    //value = -1
 
-        long int getCount(size_t sensor = 0);
+        long int getCount(size_t sensor = ENCODER_LEFT);
 
-        unsigned int getPin(size_t sensor = 0, size_t index = 0) const;
+        unsigned int getPin(size_t sensor = ENCODER_LEFT, size_t index = ENCODER_OUT_A) const;
 
         size_t getSensorNum() const;
 

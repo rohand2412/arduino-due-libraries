@@ -94,10 +94,10 @@ void Encoder_Wrapper::begin(unsigned int* pins, size_t sensorNum /*= 1*/)
             }
 
             //Populate new memory with new data
-            _pins[sensor * PINS_PER_SENSOR] = pins[pinsIndex * PINS_PER_SENSOR];
-            _pins[sensor * PINS_PER_SENSOR + 1] = pins[pinsIndex * PINS_PER_SENSOR + 1];
-            _encodersPtr[sensor] = new Encoder(_pins[sensor * PINS_PER_SENSOR],
-                                               _pins[sensor * PINS_PER_SENSOR + 1]);
+            _pins[sensor * PINS_PER_SENSOR + ENCODER_OUT_A] = pins[pinsIndex * PINS_PER_SENSOR + ENCODER_OUT_A];
+            _pins[sensor * PINS_PER_SENSOR + ENCODER_OUT_B] = pins[pinsIndex * PINS_PER_SENSOR + ENCODER_OUT_B];
+            _encodersPtr[sensor] = new Encoder(_pins[sensor * PINS_PER_SENSOR + ENCODER_OUT_A],
+                                               _pins[sensor * PINS_PER_SENSOR + ENCODER_OUT_B]);
 
             //Move to next pin pair
             pinsIndex++;
@@ -179,7 +179,7 @@ void Encoder_Wrapper::resetCount(size_t sensor /*= 0xFFFFFFFF*/)    //sensor = -
     }
 }
 
-long int Encoder_Wrapper::getCount(size_t sensor /*= 0*/)
+long int Encoder_Wrapper::getCount(size_t sensor /*= ENCODER_LEFT*/)
 {
     //Prevent array overflow
     sensor = _indexCap(sensor, _sensorNum);
@@ -189,7 +189,7 @@ long int Encoder_Wrapper::getCount(size_t sensor /*= 0*/)
     return _encodersPtr[_indices[sensor]]->read() - _resetCounts[sensor] + _setCounts[sensor];
 }
 
-unsigned int Encoder_Wrapper::getPin(size_t sensor /*= 0*/, size_t index /*= 0*/) const
+unsigned int Encoder_Wrapper::getPin(size_t sensor /*= ENCODER_LEFT*/, size_t index /*= ENCODER_OUT_A*/) const
 {
     //Prevent array overflow
     sensor = _indexCap(sensor, _sensorNum);
@@ -307,10 +307,10 @@ void Encoder_Wrapper::_construct(unsigned int *pins, size_t newSensorNum, size_t
     for (size_t oldSensor = 0; oldSensor < oldSensorNum; oldSensor++)
     {
         //Populate allocated memory
-        _pins[oldSensor * PINS_PER_SENSOR] = pins[oldSensor * PINS_PER_SENSOR];
-        _pins[oldSensor * PINS_PER_SENSOR + 1] = pins[oldSensor * PINS_PER_SENSOR + 1];
-        _encodersPtr[oldSensor] = new Encoder(_pins[oldSensor * PINS_PER_SENSOR],
-                                              _pins[oldSensor * PINS_PER_SENSOR + 1]);
+        _pins[oldSensor * PINS_PER_SENSOR + ENCODER_OUT_A] = pins[oldSensor * PINS_PER_SENSOR + ENCODER_OUT_A];
+        _pins[oldSensor * PINS_PER_SENSOR + ENCODER_OUT_B] = pins[oldSensor * PINS_PER_SENSOR + ENCODER_OUT_B];
+        _encodersPtr[oldSensor] = new Encoder(_pins[oldSensor * PINS_PER_SENSOR + ENCODER_OUT_A],
+                                              _pins[oldSensor * PINS_PER_SENSOR + ENCODER_OUT_B]);
     }
 }
 
