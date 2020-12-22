@@ -48,4 +48,9 @@ class Encoder_Wrapper
                             size_t oldPinIndicesNum);
 
         static size_t _indexCap(size_t index, size_t maxIndex);
+
+        static void _construct(unsigned int *pins, size_t newSensorNum,
+                               size_t oldSensorNum);
+
+        static void _construct(unsigned int *pins, size_t sensorNum);
 };

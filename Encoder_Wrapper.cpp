@@ -50,17 +50,11 @@ Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum /*= 1*/)
 
     if (_instanceNum == 1)
     {
+        //Initialize _totalSensorNum
         _totalSensorNum = _sensorNum;
-        _encodersPtr = new Encoder *[_totalSensorNum];
-        _pins = new unsigned int[_totalSensorNum * _pinsPerSensor];
-        for (size_t i = 0; i < _totalSensorNum; i++)
-        {
-            _pins[i * _pinsPerSensor] = pins[i * _pinsPerSensor];
-            _pins[i * _pinsPerSensor + 1] = pins[i * _pinsPerSensor + 1];
-            _encodersPtr[i] = new Encoder(_pins[i * _pinsPerSensor],
-                                          _pins[i * _pinsPerSensor + 1]);
-            
-        }
+
+        //Construct static data structures
+        _construct(pins, _totalSensorNum);
     }
     //Check for new sensors that need to be added
     else if (skipIndicesNum < _sensorNum) 
@@ -74,17 +68,8 @@ Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum /*= 1*/)
         Encoder **encodersPtr = _encodersPtr;
         unsigned int *oldPins = _pins;
 
-        //Allocate new memory
-        _encodersPtr = new Encoder *[newSensorNum];
-        _pins = new unsigned int[newSensorNum * _pinsPerSensor];
-
-        //Populate new memory with old memory
-        for (size_t i = 0; i < oldSensorNum; i++)
-        {
-            _pins[i * _pinsPerSensor] = oldPins[i * _pinsPerSensor];
-            _pins[i * _pinsPerSensor + 1] = oldPins[i * _pinsPerSensor + 1];
-            _encodersPtr[i] = encodersPtr[i];
-        }
+        //Allocate and populate memory with old data
+        _construct(oldPins, newSensorNum, oldSensorNum);
 
         //Separate index for new pins in a skip of index is necessary
         size_t pinsIndex = 0;
@@ -258,4 +243,28 @@ size_t Encoder_Wrapper::_indexCap(size_t index, size_t maxIndex)
 
     //Return index
     return index;
+}
+
+void Encoder_Wrapper::_construct(unsigned int *pins, size_t newSensorNum, size_t oldSensorNum)
+{
+    //Allocate new memory
+    _encodersPtr = new Encoder *[newSensorNum];
+    _pins = new unsigned int[newSensorNum * _pinsPerSensor];
+
+    //Iterate through sensors
+    for (size_t i = 0; i < oldSensorNum; i++)
+    {
+        //Populate allocated memory
+        _pins[i * _pinsPerSensor] = pins[i * _pinsPerSensor];
+        _pins[i * _pinsPerSensor + 1] = pins[i * _pinsPerSensor + 1];
+        _encodersPtr[i] = new Encoder(_pins[i * _pinsPerSensor],
+                                      _pins[i * _pinsPerSensor + 1]);
+    }
+}
+
+void Encoder_Wrapper::_construct(unsigned int *pins, size_t sensorNum)
+{
+    //Use other version of find for when the
+    //new and old sensor num are the same
+    _construct(pins, sensorNum, sensorNum);
 }
