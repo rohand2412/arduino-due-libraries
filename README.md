@@ -33,3 +33,5 @@ For now, please note that we did not write the following libraries and that if y
  - Ultrasonic.h
  - Ultrasonic_Wrapper.cpp
  - Ultrasonic_Wrapper.h
+ - Encoder_Wrapper.cpp
+ - Encoder_Wrapper.h
