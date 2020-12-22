@@ -15,6 +15,7 @@ class Encoder_Wrapper
         long int *_resetCounts;
         long int *_setCounts;
         size_t *_indices;
+        size_t *_pinIndices;
 
     public:
         static const size_t PINS_PER_SENSOR = 2;

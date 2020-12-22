@@ -110,9 +110,14 @@ void Encoder_Wrapper::begin(unsigned int* pins, size_t sensorNum /*= 1*/)
 
     //Initialize index translator due to varying order of pin input
     _indices = new size_t[_sensorNum];
+    _pinIndices = new size_t[_sensorNum * PINS_PER_SENSOR];
     for (size_t sensor = 0; sensor < _sensorNum; sensor++)
     {
         _indices[sensor] = _find(pins[sensor * PINS_PER_SENSOR], PINS_PER_SENSOR, _pins, _totalSensorNum);
+        for (size_t pinIndex = 0; pinIndex < PINS_PER_SENSOR; pinIndex++)
+        {
+            _pinIndices[sensor * PINS_PER_SENSOR + pinIndex] = _find(pins[sensor * PINS_PER_SENSOR + pinIndex], _pins, _totalSensorNum * PINS_PER_SENSOR);
+        }
     }
 }
 
@@ -191,7 +196,7 @@ unsigned int Encoder_Wrapper::getPin(size_t sensor /*= 0*/, size_t index /*= 0*/
     index = _indexCap(index, PINS_PER_SENSOR);
 
     //Return specified pin
-    return _pins[_indices[sensor] * PINS_PER_SENSOR + index];
+    return _pins[_pinIndices[sensor * PINS_PER_SENSOR + index]];
 }
 
 size_t Encoder_Wrapper::getSensorNum() const
@@ -262,11 +267,19 @@ size_t Encoder_Wrapper::_find(unsigned int& newPins, size_t newPinLen, unsigned 
 
 size_t Encoder_Wrapper::_find(size_t newPinIndex, size_t *oldPinIndices, size_t oldPinIndicesNum)
 {
-    //Index will always be only one number
-    const size_t indexNum = 1;
+    //Iterate through old pin indices
+    for (size_t oldPinIndex = 0; oldPinIndex < oldPinIndicesNum; oldPinIndex++)
+    {
+        //Check if pin index matches old pin iteration
+        if (oldPinIndices[oldPinIndex] == newPinIndex)
+        {
+            //Return running iterator if match found
+            return oldPinIndex;
+        }
+    }
 
-    //Use other version of find to search for singular values as well
-    return _find(newPinIndex, indexNum, oldPinIndices, oldPinIndicesNum);
+    //Return -1 if no match found
+    return 0xFFFFFFFF;
 }
 
 size_t Encoder_Wrapper::_indexCap(size_t index, size_t maxIndex)
