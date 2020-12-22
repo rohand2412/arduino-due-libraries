@@ -6,7 +6,6 @@ class Encoder_Wrapper
 {
     private:
         static unsigned int _instanceNum;
-        static const size_t _pinsPerSensor = 2;
 
         static size_t _totalSensorNum;
         size_t _sensorNum = -1;
@@ -18,6 +17,8 @@ class Encoder_Wrapper
         size_t *_indices;
 
     public:
+        static const size_t PINS_PER_SENSOR = 2;
+
         static const size_t ENCODER_LEFT = 0;
         static const size_t ENCODER_RIGHT = 1;
         static const size_t ENCODER_OUT_A = 0;
