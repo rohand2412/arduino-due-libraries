@@ -22,6 +22,16 @@ class Motor_Wrapper
         int* _speeds;
 
         bool* _states;
+    
+    public:
+        static const size_t SHIELD_M1 = 1;
+        static const size_t SHIELD_M2 = 2;
+        static const size_t SHIELD_M3 = 3;
+        static const size_t SHIELD_M4 = 4;
+
+        static const size_t MOTOR_LEFT = 0;
+        static const size_t MOTOR_RIGHT = 1;
+        static const size_t MOTOR_ALL = 0xFFFFFFFF; //= -1
 
     public:
         Motor_Wrapper(unsigned int* ports, size_t motorNum);
@@ -35,38 +45,38 @@ class Motor_Wrapper
         void setPid(float* proportionals, float* integrals, float* derivatives);
 
         void setPid(float proportional, float integral, float derivative,
-                    size_t motor = 0xFFFFFFFF); //motor = -1
+                    size_t motor = MOTOR_ALL);
 
         void update();
 
         void setSpeedMultiplier(int* speedMultipliers);
 
-        void setSpeedMultiplier(int speedMultiplier, size_t motor = 0xFFFFFFFF);    //motor = -1
+        void setSpeedMultiplier(int speedMultiplier, size_t motor = MOTOR_ALL);
 
-        int getSpeedMultiplier(size_t motor = 0) const;
+        int getSpeedMultiplier(size_t motor = MOTOR_LEFT) const;
 
         void setSpeed(int* speeds);
 
-        void setSpeed(int speed, size_t motor = 0xFFFFFFFF);    //motor = -1
+        void setSpeed(int speed, size_t motor = MOTOR_ALL);
 
-        int getSpeed(size_t motor = 0) const;
+        int getSpeed(size_t motor = MOTOR_LEFT) const;
 
         void setState(bool* states);
 
-        void setState(bool state, size_t motor = 0xFFFFFFFF);   //motor = -1
+        void setState(bool state, size_t motor = MOTOR_ALL);
 
         void start();
 
         void stop();
 
-        bool getState(size_t motor = 0) const;
+        bool getState(size_t motor = MOTOR_LEFT) const;
 
         void run(int* speeds);
 
-        void run(int speed, size_t motor = 0xFFFFFFFF); //motor = -1
+        void run(int speed, size_t motor = MOTOR_ALL);
 
         size_t getMotorNum() const;
     
     private:
-        float _calculatePid(size_t motor = 0);
+        float _calculatePid(size_t motor = MOTOR_LEFT);
 }
