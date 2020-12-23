@@ -53,8 +53,6 @@ class Encoder_Wrapper
         static size_t _find(size_t newPinIndex, size_t *oldPinIndices,
                             size_t oldPinIndicesNum);
 
-        static size_t _indexCap(size_t index, size_t maxIndex);
-
         static void _construct(unsigned int *pins, size_t newSensorNum,
                                size_t oldSensorNum);
 

@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "Encoder_Wrapper.h"
+#include "Utilities.h"
 
 //Initialize static variables
 unsigned int Encoder_Wrapper::_instanceNum = 0;
@@ -150,7 +151,7 @@ Encoder_Wrapper::~Encoder_Wrapper()
 void Encoder_Wrapper::setCount(size_t sensor, long int newCount)
 {
     //Prevent array overflow
-    sensor = _indexCap(sensor, _sensorNum);
+    sensor = Utilities::indexCap(sensor, _sensorNum);
     //Store new count that encoder was set to
     _setCounts[sensor] = newCount;
     //Store count at which encoder was reset
@@ -172,7 +173,7 @@ void Encoder_Wrapper::resetCount(size_t sensor /*= 0xFFFFFFFF*/)    //sensor = -
     else
     {
         //Prevent array overflow
-        sensor = _indexCap(sensor, _sensorNum);
+        sensor = Utilities::indexCap(sensor, _sensorNum);
 
         //Set specific encoder to zero
         setCount(sensor, 0);
@@ -182,7 +183,7 @@ void Encoder_Wrapper::resetCount(size_t sensor /*= 0xFFFFFFFF*/)    //sensor = -
 long int Encoder_Wrapper::getCount(size_t sensor /*= ENCODER_LEFT*/)
 {
     //Prevent array overflow
-    sensor = _indexCap(sensor, _sensorNum);
+    sensor = Utilities::indexCap(sensor, _sensorNum);
 
     //Return count by taking the delta of current reading and reset
     //Then adding the delta to the count that the encoder was set to
@@ -192,8 +193,8 @@ long int Encoder_Wrapper::getCount(size_t sensor /*= ENCODER_LEFT*/)
 unsigned int Encoder_Wrapper::getPin(size_t sensor /*= ENCODER_LEFT*/, size_t index /*= ENCODER_OUT_A*/) const
 {
     //Prevent array overflow
-    sensor = _indexCap(sensor, _sensorNum);
-    index = _indexCap(index, PINS_PER_SENSOR);
+    sensor = Utilities::indexCap(sensor, _sensorNum);
+    index = Utilities::indexCap(index, PINS_PER_SENSOR);
 
     //Return specified pin
     return _pins[_pinIndices[sensor * PINS_PER_SENSOR + index]];
@@ -280,21 +281,6 @@ size_t Encoder_Wrapper::_find(size_t newPinIndex, size_t *oldPinIndices, size_t 
 
     //Return -1 if no match found
     return 0xFFFFFFFF;
-}
-
-size_t Encoder_Wrapper::_indexCap(size_t index, size_t maxIndex)
-{
-    //Indices start at 0 so minus 1 is max index value
-    maxIndex -= 1;
-
-    //Make sure index is positive
-    index = (index < 0) ? 0 : index;
-
-    //Make sure index doesn't exceed maxIndex
-    index = (index >= maxIndex) ? maxIndex : index;
-
-    //Return index
-    return index;
 }
 
 void Encoder_Wrapper::_construct(unsigned int *pins, size_t newSensorNum, size_t oldSensorNum)
