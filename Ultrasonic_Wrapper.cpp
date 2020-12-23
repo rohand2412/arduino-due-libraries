@@ -88,6 +88,6 @@ void Ultrasonic_Wrapper::_init(unsigned int *echoPins, unsigned int *burstFreque
     _ultrasonicsPtr = new Ultrasonic *[_sensorNum];
     for (size_t i = 0; i < _sensorNum; i++)
     {
-        _ultrasonicsPtr[i] = new Ultrasonic(_trigPin, *echoPins++, *burstFrequencies++);
+        _ultrasonicsPtr[i] = new Ultrasonic(_trigPin, echoPins[i], burstFrequencies[i]);
     }
 }
