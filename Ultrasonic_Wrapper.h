@@ -40,13 +40,13 @@ class Ultrasonic_Wrapper
 
         void update();
 
-        unsigned int getDistance(size_t index = 0) const;
+        unsigned int getDistance(size_t sensor = ULTRASONIC_FRONT) const;
 
-        unsigned int getEchoPin(size_t index = 0) const;
+        unsigned int getEchoPin(size_t sensor = ULTRASONIC_FRONT) const;
 
         unsigned int getTrigPin() const;
 
-        void echoPinISR(size_t index = 0);
+        void echoPinISR(size_t sensor = ULTRASONIC_FRONT);
     
     private:
         void _init(unsigned int *echoPins, unsigned int *burstFrequencies);

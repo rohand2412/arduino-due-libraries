@@ -8,6 +8,7 @@ Ultrasonic_Wrapper::Ultrasonic_Wrapper(unsigned int trigPin,
                                        _trigPin(trigPin),
                                        _sensorNum(sensorNum)
 {
+    //Initialize instance
     _init(echoPins, burstFrequencies);
 }
 
@@ -18,6 +19,7 @@ Ultrasonic_Wrapper::Ultrasonic_Wrapper(unsigned int trigPin,
                                        _trigPin(trigPin),
                                        _sensorNum(sensorNum)
 {
+    //Initialize instance
     _init(echoPins, &burstFrequency);
 }
 
@@ -27,67 +29,86 @@ Ultrasonic_Wrapper::Ultrasonic_Wrapper(unsigned int trigPin,
                                        _trigPin(trigPin),
                                        _sensorNum(1)
 {
+    //Initialize instance
     _init(&echoPin, &burstFrequency);
 }
 
 Ultrasonic_Wrapper::~Ultrasonic_Wrapper()
 {
-    for (size_t i = 0; i < _sensorNum; i++)
+    //Iterate through sensors
+    for (size_t sensor = 0; sensor < _sensorNum; sensor++)
     {
-        delete _ultrasonicsPtr[i];
+        //Destroy each sensor individually
+        delete _ultrasonicsPtr[sensor];
     }
+
+    //Destroy encapsulating array
     delete[] _ultrasonicsPtr;
 }
 
 void Ultrasonic_Wrapper::begin(void (*externalEchoPinISRs[])())
 {
-    for (size_t i = 0; i < _sensorNum; i++)
+    //Iterate through sensors
+    for (size_t sensor = 0; sensor < _sensorNum; sensor++)
     {
-        _ultrasonicsPtr[i]->begin(externalEchoPinISRs[i]);
+        //Begin set up procedures with unique ISR
+        _ultrasonicsPtr[sensor]->begin(externalEchoPinISRs[sensor]);
     }
 }
 
 void Ultrasonic_Wrapper::begin(void (*externalEchoPinISR)())
 {
-    for (size_t i = 0; i < _sensorNum; i++)
+    //Iterate through sensors
+    for (size_t sensor = 0; sensor < _sensorNum; sensor++)
     {
-        _ultrasonicsPtr[i]->begin(externalEchoPinISR);
+        //Begin set up procedures with same ISR
+        _ultrasonicsPtr[sensor]->begin(externalEchoPinISR);
     }
 }
 
 void Ultrasonic_Wrapper::update()
 {
-    for (size_t i = 0; i < _sensorNum; i++)
+    //Iterate through sensors
+    for (size_t sensor = 0; sensor < _sensorNum; sensor++)
     {
-        _ultrasonicsPtr[i]->update();
+        //Update sensor
+        _ultrasonicsPtr[sensor]->update();
     }
 }
 
-unsigned int Ultrasonic_Wrapper::getDistance(size_t index /*= 0*/) const
+unsigned int Ultrasonic_Wrapper::getDistance(size_t sensor /*= ULTRASONIC_FRONT*/) const
 {
-    return _ultrasonicsPtr[index]->getDistance();
+    //Return distance of specified sensor
+    return _ultrasonicsPtr[sensor]->getDistance();
 }
 
-unsigned int Ultrasonic_Wrapper::getEchoPin(size_t index /*= 0*/) const
+unsigned int Ultrasonic_Wrapper::getEchoPin(size_t sensor /*= ULTRASONIC_FRONT*/) const
 {
-    return _ultrasonicsPtr[index]->getEchoPin();
+    //Return echo pin of specified sensor
+    return _ultrasonicsPtr[sensor]->getEchoPin();
 }
 
 unsigned int Ultrasonic_Wrapper::getTrigPin() const
 {
+    //Return shared trig pin
     return _trigPin;
 }
 
-void Ultrasonic_Wrapper::echoPinISR(size_t index /*= 0*/)
+void Ultrasonic_Wrapper::echoPinISR(size_t sensor /*= ULTRASONIC_FRONT*/)
 {
-    _ultrasonicsPtr[index]->echoPinISR();
+    //ISR wrapper for specified sensor
+    _ultrasonicsPtr[sensor]->echoPinISR();
 }
 
 void Ultrasonic_Wrapper::_init(unsigned int *echoPins, unsigned int *burstFrequencies)
 {
+    //Allocate memory
     _ultrasonicsPtr = new Ultrasonic *[_sensorNum];
-    for (size_t i = 0; i < _sensorNum; i++)
+
+    //Iterate through sensors
+    for (size_t sensor = 0; sensor < _sensorNum; sensor++)
     {
-        _ultrasonicsPtr[i] = new Ultrasonic(_trigPin, echoPins[i], burstFrequencies[i]);
+        //Populate memory
+        _ultrasonicsPtr[sensor] = new Ultrasonic(_trigPin, echoPins[sensor], burstFrequencies[sensor]);
     }
 }
