@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "Ultrasonic_Wrapper.h"
+#include "Utilities.h"
 
 Ultrasonic_Wrapper::Ultrasonic_Wrapper(unsigned int trigPin, 
                                        unsigned int* echoPins,
@@ -78,12 +79,18 @@ void Ultrasonic_Wrapper::update()
 
 unsigned int Ultrasonic_Wrapper::getDistance(size_t sensor /*= ULTRASONIC_FRONT*/) const
 {
+    //Prevent array overflow
+    sensor = Utilities::indexCap(sensor, _sensorNum);
+
     //Return distance of specified sensor
     return _ultrasonicsPtr[sensor]->getDistance();
 }
 
 unsigned int Ultrasonic_Wrapper::getEchoPin(size_t sensor /*= ULTRASONIC_FRONT*/) const
 {
+    //Prevent array overflow
+    sensor = Utilities::indexCap(sensor, _sensorNum);
+
     //Return echo pin of specified sensor
     return _ultrasonicsPtr[sensor]->getEchoPin();
 }
@@ -96,6 +103,9 @@ unsigned int Ultrasonic_Wrapper::getTrigPin() const
 
 void Ultrasonic_Wrapper::echoPinISR(size_t sensor /*= ULTRASONIC_FRONT*/)
 {
+    //Prevent array overflow
+    sensor = Utilities::indexCap(sensor, _sensorNum);
+
     //ISR wrapper for specified sensor
     _ultrasonicsPtr[sensor]->echoPinISR();
 }
