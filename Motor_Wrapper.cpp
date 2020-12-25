@@ -17,7 +17,7 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports, size_t motorNum) : _motorNum(m
         _proportionals[motor] = 0;
         _integrals[motor] = 0;
         _derivatives[motor] = 0;
-        _speedMultipliers[motor] = 1;
+        _speedMultipliers[motor] = MOTOR_NO_FLIP;
         _speeds[motor] = 0;
         _states[motor] = false;
     }
@@ -153,12 +153,12 @@ void Motor_Wrapper::setState(bool* states)
 
 void Motor_Wrapper::start()
 {
-    setState(true, MOTOR_ALL);
+    setState(MOTOR_ON, MOTOR_ALL);
 }
 
 void Motor_Wrapper::stop()
 {
-    setState(false, MOTOR_ALL);
+    setState(MOTOR_OFF, MOTOR_ALL);
 }
 
 bool Motor_Wrapper::getState(size_t motor /*= MOTOR_LEFT*/) const

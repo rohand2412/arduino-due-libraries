@@ -33,6 +33,12 @@ class Motor_Wrapper
         static const size_t MOTOR_RIGHT = 1;
         static const size_t MOTOR_ALL = 0xFFFFFFFF; //= -1
 
+        static const int MOTOR_FLIP = -1;
+        static const int MOTOR_NO_FLIP = 1;
+
+        static const bool MOTOR_ON = true;
+        static const bool MOTOR_OFF = false;
+
     public:
         Motor_Wrapper(unsigned int* ports, size_t motorNum);
 
