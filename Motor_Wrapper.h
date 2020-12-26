@@ -85,6 +85,8 @@ class Motor_Wrapper
 
         size_t getMotorNum() const;
 
+        void resetCount(size_t motor = MOTOR_ALL);
+
         long int getCount(size_t motor = MOTOR_LEFT);
 
         unsigned int getEncoderPin(size_t sensor = Encoder_Wrapper::ENCODER_LEFT,

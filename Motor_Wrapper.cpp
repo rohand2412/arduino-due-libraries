@@ -198,6 +198,11 @@ size_t Motor_Wrapper::getMotorNum() const
     return _motorNum;
 }
 
+void Motor_Wrapper::resetCount(size_t motor /*= MOTOR_ALL*/)
+{
+    _encoders.resetCount(motor);
+}
+
 long int Motor_Wrapper::getCount(size_t motor /*= MOTOR_LEFT*/)
 {
     return _encoders.getCount(motor) * _speedMultipliers[motor];
