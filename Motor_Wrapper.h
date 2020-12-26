@@ -46,12 +46,14 @@ class Motor_Wrapper
 
         ~Motor_Wrapper();
 
-        void setEncoders(unsigned int* pins, size_t sensorNum = 1);
+        void setEncoders(unsigned int* pins);
 
         void setPid(float proportional, float integral, float derivative,
                     size_t motor = MOTOR_ALL);
 
         void setPid(float* proportionals, float* integrals, float* derivatives);
+
+        void begin();
 
         void update();
 
@@ -82,7 +84,14 @@ class Motor_Wrapper
         void run(int* speeds);
 
         size_t getMotorNum() const;
+
+        long int getCount(size_t motor = MOTOR_LEFT);
+
+        unsigned int getEncoderPin(size_t sensor = Encoder_Wrapper::ENCODER_LEFT,
+                                   size_t index = Encoder_Wrapper::ENCODER_OUT_A) const;
     
     private:
+        void _updateMotor(size_t motor = MOTOR_LEFT);
+
         float _calculatePid(size_t motor = MOTOR_LEFT);
 };

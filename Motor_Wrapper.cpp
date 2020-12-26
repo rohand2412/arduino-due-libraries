@@ -37,9 +37,9 @@ Motor_Wrapper::~Motor_Wrapper()
     delete[] _states;
 }
 
-void Motor_Wrapper::setEncoders(unsigned int* pins, size_t sensorNum /*= 1*/)
+void Motor_Wrapper::setEncoders(unsigned int* pins)
 {
-    _encoders.begin(pins, sensorNum);
+    _encoders.begin(pins, _motorNum);
 }
 
 void Motor_Wrapper::setPid(float proportional, float integral, float derivative,
@@ -70,6 +70,15 @@ void Motor_Wrapper::setPid(float* proportionals, float* integrals, float* deriva
     }
 }
 
+void Motor_Wrapper::begin()
+{
+    _motorShield.begin();
+
+    //Warm up motors
+    run(150);
+    stop();
+}
+
 void Motor_Wrapper::update() {}
 
 void Motor_Wrapper::setSpeedMultiplier(int speedMultiplier, size_t motor /*= MOTOR_ALL*/)
@@ -79,11 +88,13 @@ void Motor_Wrapper::setSpeedMultiplier(int speedMultiplier, size_t motor /*= MOT
         for (size_t motor = 0; motor < _motorNum; motor++)
         {
             _speedMultipliers[motor] = speedMultiplier;
+            _updateMotor(motor);
         }
     }
     else
     {
         _speedMultipliers[motor] = speedMultiplier;
+        _updateMotor(motor);
     }
 }
 
@@ -107,11 +118,13 @@ void Motor_Wrapper::setSpeed(int speed, size_t motor /*= MOTOR_ALL*/)
         for (size_t motor = 0; motor < _motorNum; motor++)
         {
             _speeds[motor] = speed;
+            _updateMotor(motor);
         }
     }
     else
     {
         _speeds[motor] = speed;
+        _updateMotor(motor);
     }
 }
 
@@ -135,11 +148,13 @@ void Motor_Wrapper::setState(bool state, size_t motor /*= MOTOR_ALL*/)
         for (size_t motor = 0; motor < _motorNum; motor++)
         {
             _states[motor] = state;
+            _updateMotor(motor);
         }
     }
     else
     {
         _states[motor] = state;
+        _updateMotor(motor);
     }
 }
 
@@ -181,4 +196,45 @@ void Motor_Wrapper::run(int* speeds)
 size_t Motor_Wrapper::getMotorNum() const
 {
     return _motorNum;
+}
+
+long int Motor_Wrapper::getCount(size_t motor /*= MOTOR_LEFT*/)
+{
+    return _encoders.getCount(motor) * _speedMultipliers[motor];
+}
+
+unsigned int Motor_Wrapper::getEncoderPin(size_t sensor /*= Encoder_Wrapper::ENCODER_LEFT*/,
+                                          size_t index /*= Encoder_Wrapper::ENCODER_OUT_A*/)
+                                          const
+{
+    return _encoders.getPin(sensor, index);
+}
+
+void Motor_Wrapper::_updateMotor(size_t motor /*= MOTOR_LEFT*/)
+{
+    if (getState(motor))
+    {
+        int direction;
+        int individualSpeed = getSpeed(motor) * getSpeedMultiplier(motor);
+        int inputSpeed = getSpeed(motor) < 0 ? -getSpeed(motor) : getSpeed(motor);
+        if (individualSpeed == 0)
+        {
+            direction = RELEASE;
+        }
+        else if (individualSpeed > 0)
+        {
+            direction = FORWARD;
+        }
+        else
+        {
+            direction = BACKWARD;
+        }
+
+        _motorsPtr[motor]->setSpeed(inputSpeed);
+        _motorsPtr[motor]->run(direction);
+    }
+    else
+    {
+        _motorsPtr[motor]->run(RELEASE);
+    }
 }
