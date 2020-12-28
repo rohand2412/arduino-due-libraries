@@ -33,6 +33,7 @@ class Motor_Wrapper
         const float _COUNTS_PER_INTERVAL_MS_TO_RPS;
 
         unsigned int _lastUpdated_MS;
+        bool _justUpdated = false;
 
     public:
         static const size_t SHIELD_M1 = 1;
@@ -75,6 +76,8 @@ class Motor_Wrapper
         void begin();
 
         void update();
+
+        bool getJustUpdated();
 
         void setSpeedMultiplier(int speedMultiplier, size_t motor = MOTOR_ALL);
 

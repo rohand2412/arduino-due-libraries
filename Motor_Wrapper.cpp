@@ -135,7 +135,21 @@ void Motor_Wrapper::update()
             }
         }
         _encoders.resetCount();
+        _justUpdated = true;
         _lastUpdated_MS = millis();
+    }
+}
+
+bool Motor_Wrapper::getJustUpdated()
+{
+    if (_justUpdated)
+    {
+        _justUpdated = false;
+        return true;
+    }
+    else
+    {
+        return false;
     }
 }
 
