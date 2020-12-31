@@ -23,6 +23,8 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
     _actualSpeeds_RPS = new double[_motorNum];
     _lastInputtedSpeeds_PWM = new int[_motorNum];
     _states = new bool[_motorNum];
+    _lastCorrected_MS = new unsigned int[_motorNum];
+    _elapsedCorrectedTime_MS = new unsigned int[_motorNum];
 
     for (size_t motor = 0; motor < _motorNum; motor++)
     {
@@ -37,6 +39,8 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
         _actualSpeeds_RPS[motor] = 0;
         _lastInputtedSpeeds_PWM[motor] = 0;
         _states[motor] = false;
+        _lastCorrected_MS[motor] = 0;
+        _elapsedCorrectedTime_MS[motor] = 0;
     }
 
     _lastUpdated_MS = 0;
@@ -65,6 +69,8 @@ Motor_Wrapper::~Motor_Wrapper()
     delete[] _actualSpeeds_RPS;
     delete[] _lastInputtedSpeeds_PWM;
     delete[] _states;
+    delete[] _lastCorrected_MS;
+    delete[] _elapsedCorrectedTime_MS;
 }
 
 void Motor_Wrapper::setEncoders(unsigned int* pins)
@@ -134,7 +140,6 @@ void Motor_Wrapper::update()
                 _updateMotor(_getLastInputtedSpeed(motor), motor);
             }
         }
-        _encoders.resetCount();
         _justUpdated = true;
         _lastUpdated_MS = millis();
     }
@@ -151,6 +156,16 @@ bool Motor_Wrapper::getJustUpdated()
     {
         return false;
     }
+}
+
+unsigned int Motor_Wrapper::getLastCorrected_MS(size_t motor /*= MOTOR_LEFT*/)
+{
+    return _lastCorrected_MS[motor];
+}
+
+unsigned int Motor_Wrapper::getElapsedCorrectedTime_MS(size_t motor /*= MOTOR_LEFT*/)
+{
+    return _elapsedCorrectedTime_MS[motor];
 }
 
 void Motor_Wrapper::setSpeedMultiplier(int speedMultiplier, size_t motor /*= MOTOR_ALL*/)
@@ -342,9 +357,9 @@ void Motor_Wrapper::_updateMotor(int newSpeed, size_t motor /*= MOTOR_LEFT*/)
 double Motor_Wrapper::_getCorrection(size_t motor /*= MOTOR_LEFT*/)
 {
     double target = getSpeed(motor) * _RPS_TO_COUNTS_PER_INTERVAL_MS;
-    unsigned int elapsedTime = millis() - _lastUpdated_MS;
+    _elapsedCorrectedTime_MS[motor] = millis() - _lastCorrected_MS[motor];
     long int count = getCount(motor);
-    double value = count * (double) _INTERVAL_MS / (double) elapsedTime;
+    double value = count * (double) _INTERVAL_MS / (double) _elapsedCorrectedTime_MS[motor];
     _actualSpeeds_RPS[motor] = value * _COUNTS_PER_INTERVAL_MS_TO_RPS;
 
     double error = target - value;
@@ -367,6 +382,8 @@ double Motor_Wrapper::_getCorrection(size_t motor /*= MOTOR_LEFT*/)
     }
 
     _lastErrors[motor] = error;
+    _encoders.resetCount(motor);
+    _lastCorrected_MS[motor] = millis();
 
     return correction;
 }

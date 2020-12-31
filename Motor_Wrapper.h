@@ -32,6 +32,8 @@ class Motor_Wrapper
         const double _RPS_TO_COUNTS_PER_INTERVAL_MS;
         const double _COUNTS_PER_INTERVAL_MS_TO_RPS;
 
+        unsigned int *_lastCorrected_MS;
+        unsigned int *_elapsedCorrectedTime_MS;
         unsigned int _lastUpdated_MS;
         bool _justUpdated = false;
 
@@ -78,6 +80,10 @@ class Motor_Wrapper
         void update();
 
         bool getJustUpdated();
+
+        unsigned int getLastCorrected_MS(size_t motor = MOTOR_LEFT);
+
+        unsigned int getElapsedCorrectedTime_MS(size_t motor = MOTOR_LEFT);
 
         void setSpeedMultiplier(int speedMultiplier, size_t motor = MOTOR_ALL);
 
