@@ -13,24 +13,24 @@ class Motor_Wrapper
 
         Encoder_Wrapper _encoders;
 
-        float *_proportionalCoefficients;
-        float *_integralCoefficients;
-        float *_derivativeCoefficients;
-        float *_integrals;
-        float *_lastErrors;
+        double *_proportionalCoefficients;
+        double *_integralCoefficients;
+        double *_derivativeCoefficients;
+        double *_integrals;
+        double *_lastErrors;
 
         int* _speedMultipliers;
 
-        float* _targetSpeeds_RPS;
-        float* _actualSpeeds_RPS;
+        double* _targetSpeeds_RPS;
+        double* _actualSpeeds_RPS;
         int* _lastInputtedSpeeds_PWM;
 
         bool* _states;
 
         const unsigned int _INTERVAL_MS;
         const long int _COUNTS_PER_REVOLUTION;
-        const float _RPS_TO_COUNTS_PER_INTERVAL_MS;
-        const float _COUNTS_PER_INTERVAL_MS_TO_RPS;
+        const double _RPS_TO_COUNTS_PER_INTERVAL_MS;
+        const double _COUNTS_PER_INTERVAL_MS_TO_RPS;
 
         unsigned int _lastUpdated_MS;
         bool _justUpdated = false;
@@ -64,14 +64,14 @@ class Motor_Wrapper
 
         void setEncoders(unsigned int* pins);
 
-        void setPid(float proportionalCoefficient,
-                    float integralCoefficient,
-                    float derivativeCoefficient,
+        void setPid(double proportionalCoefficient,
+                    double integralCoefficient,
+                    double derivativeCoefficient,
                     size_t motor = MOTOR_ALL);
 
-        void setPid(float* proportionalCoefficients,
-                    float* integralCoefficients,
-                    float* derivativeCoefficients);
+        void setPid(double* proportionalCoefficients,
+                    double* integralCoefficients,
+                    double* derivativeCoefficients);
 
         void begin();
 
@@ -85,13 +85,13 @@ class Motor_Wrapper
 
         int getSpeedMultiplier(size_t motor = MOTOR_LEFT) const;
 
-        void setSpeed(float speed, size_t motor = MOTOR_ALL);
+        void setSpeed(double speed, size_t motor = MOTOR_ALL);
 
-        void setSpeed(float* speeds);
+        void setSpeed(double* speeds);
 
-        float getSpeed(size_t motor = MOTOR_LEFT) const;
+        double getSpeed(size_t motor = MOTOR_LEFT) const;
 
-        float getActualSpeed(size_t motor = MOTOR_LEFT) const;
+        double getActualSpeed(size_t motor = MOTOR_LEFT) const;
 
         void setState(bool state, size_t motor = MOTOR_ALL);
 
@@ -103,9 +103,9 @@ class Motor_Wrapper
 
         bool getState(size_t motor = MOTOR_LEFT) const;
 
-        void run(float speed, size_t motor = MOTOR_ALL);
+        void run(double speed, size_t motor = MOTOR_ALL);
 
-        void run(float* speeds);
+        void run(double* speeds);
 
         size_t getMotorNum() const;
 
@@ -121,5 +121,5 @@ class Motor_Wrapper
 
         void _updateMotor(int newSpeed, size_t motor = MOTOR_LEFT);
 
-        float _getCorrection(size_t motor = MOTOR_LEFT);
+        double _getCorrection(size_t motor = MOTOR_LEFT);
 };

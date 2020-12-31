@@ -13,14 +13,14 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
                              _COUNTS_PER_INTERVAL_MS_TO_RPS(1000.0 / (_INTERVAL_MS * _COUNTS_PER_REVOLUTION))
 {
     _motorsPtr = new Adafruit_DCMotor *[_motorNum];
-    _proportionalCoefficients = new float[_motorNum];
-    _integralCoefficients = new float[_motorNum];
-    _derivativeCoefficients = new float[_motorNum];
-    _integrals = new float[_motorNum];
-    _lastErrors = new float[_motorNum];
+    _proportionalCoefficients = new double[_motorNum];
+    _integralCoefficients = new double[_motorNum];
+    _derivativeCoefficients = new double[_motorNum];
+    _integrals = new double[_motorNum];
+    _lastErrors = new double[_motorNum];
     _speedMultipliers = new int[_motorNum];
-    _targetSpeeds_RPS = new float[_motorNum];
-    _actualSpeeds_RPS = new float[_motorNum];
+    _targetSpeeds_RPS = new double[_motorNum];
+    _actualSpeeds_RPS = new double[_motorNum];
     _lastInputtedSpeeds_PWM = new int[_motorNum];
     _states = new bool[_motorNum];
 
@@ -72,9 +72,9 @@ void Motor_Wrapper::setEncoders(unsigned int* pins)
     _encoders.begin(pins, _motorNum);
 }
 
-void Motor_Wrapper::setPid(float proportionalCoefficient,
-                           float integralCoefficient, 
-                           float derivativeCoefficient,
+void Motor_Wrapper::setPid(double proportionalCoefficient,
+                           double integralCoefficient, 
+                           double derivativeCoefficient,
                            size_t motor /*= MOTOR_ALL*/)
 {
     if (motor == MOTOR_ALL)
@@ -94,9 +94,9 @@ void Motor_Wrapper::setPid(float proportionalCoefficient,
     }
 }
 
-void Motor_Wrapper::setPid(float* proportionalCoefficients,
-                           float* integralCoefficients,
-                           float* derivativeCoefficients)
+void Motor_Wrapper::setPid(double* proportionalCoefficients,
+                           double* integralCoefficients,
+                           double* derivativeCoefficients)
 {
     for (size_t motor = 0; motor < _motorNum; motor++)
     {
@@ -128,8 +128,8 @@ void Motor_Wrapper::update()
         {
             if (getSpeed(motor) != 0 && getState(motor))
             {
-                float correction = _getCorrection(motor);
-                float newSpeed = correction + _getLastInputtedSpeed(motor);
+                double correction = _getCorrection(motor);
+                double newSpeed = correction + _getLastInputtedSpeed(motor);
                 _lastInputtedSpeeds_PWM[motor] = newSpeed >= 0 ? newSpeed + 0.5 : newSpeed - 0.5;
                 _updateMotor(_getLastInputtedSpeed(motor), motor);
             }
@@ -181,7 +181,7 @@ int Motor_Wrapper::getSpeedMultiplier(size_t motor /*= MOTOR_LEFT*/) const
     return _speedMultipliers[motor];
 }
 
-void Motor_Wrapper::setSpeed(float speed, size_t motor /*= MOTOR_ALL*/)
+void Motor_Wrapper::setSpeed(double speed, size_t motor /*= MOTOR_ALL*/)
 {
     if (motor == MOTOR_ALL)
     {
@@ -206,7 +206,7 @@ void Motor_Wrapper::setSpeed(float speed, size_t motor /*= MOTOR_ALL*/)
     }
 }
 
-void Motor_Wrapper::setSpeed(float* speeds)
+void Motor_Wrapper::setSpeed(double* speeds)
 {
     for (size_t motor = 0; motor < _motorNum; motor++)
     {
@@ -214,12 +214,12 @@ void Motor_Wrapper::setSpeed(float* speeds)
     }
 }
 
-float Motor_Wrapper::getSpeed(size_t motor /*= MOTOR_LEFT*/) const
+double Motor_Wrapper::getSpeed(size_t motor /*= MOTOR_LEFT*/) const
 {
     return _targetSpeeds_RPS[motor];
 }
 
-float Motor_Wrapper::getActualSpeed(size_t motor /*= MOTOR_LEFT*/) const
+double Motor_Wrapper::getActualSpeed(size_t motor /*= MOTOR_LEFT*/) const
 {
     return _actualSpeeds_RPS[motor];
 }
@@ -271,13 +271,13 @@ bool Motor_Wrapper::getState(size_t motor /*= MOTOR_LEFT*/) const
     return _states[motor];
 }
 
-void Motor_Wrapper::run(float speed, size_t motor /*= MOTOR_ALL*/)
+void Motor_Wrapper::run(double speed, size_t motor /*= MOTOR_ALL*/)
 {
     start();
     setSpeed(speed, motor);
 }
 
-void Motor_Wrapper::run(float* speeds)
+void Motor_Wrapper::run(double* speeds)
 {
     start();
     setSpeed(speeds);
@@ -315,8 +315,8 @@ void Motor_Wrapper::_updateMotor(int newSpeed, size_t motor /*= MOTOR_LEFT*/)
     if (getState(motor))
     {
         int direction;
-        float individualSpeed = newSpeed * getSpeedMultiplier(motor);
-        float inputSpeed = newSpeed < 0 ? -newSpeed : newSpeed;
+        double individualSpeed = newSpeed * getSpeedMultiplier(motor);
+        double inputSpeed = newSpeed < 0 ? -newSpeed : newSpeed;
         if (individualSpeed == 0)
         {
             direction = RELEASE;
@@ -339,18 +339,18 @@ void Motor_Wrapper::_updateMotor(int newSpeed, size_t motor /*= MOTOR_LEFT*/)
     }
 }
 
-float Motor_Wrapper::_getCorrection(size_t motor /*= MOTOR_LEFT*/)
+double Motor_Wrapper::_getCorrection(size_t motor /*= MOTOR_LEFT*/)
 {
-    float target = getSpeed(motor) * _RPS_TO_COUNTS_PER_INTERVAL_MS;
+    double target = getSpeed(motor) * _RPS_TO_COUNTS_PER_INTERVAL_MS;
     unsigned int elapsedTime = millis() - _lastUpdated_MS;
     long int count = getCount(motor);
-    float value = count * (float) _INTERVAL_MS / (float) elapsedTime;
+    double value = count * (double) _INTERVAL_MS / (double) elapsedTime;
     _actualSpeeds_RPS[motor] = value * _COUNTS_PER_INTERVAL_MS_TO_RPS;
 
-    float error = target - value;
+    double error = target - value;
     _integrals[motor] += error;
-    float derivative = error - _lastErrors[motor];
-    float correction = (error * _proportionalCoefficients[motor])
+    double derivative = error - _lastErrors[motor];
+    double correction = (error * _proportionalCoefficients[motor])
                        + (_integrals[motor] * _integralCoefficients[motor])
                        + (derivative * _derivativeCoefficients[motor]);
     _lastErrors[motor] = error;
