@@ -350,10 +350,32 @@ double Motor_Wrapper::_getCorrection(size_t motor /*= MOTOR_LEFT*/)
     double error = target - value;
     _integrals[motor] += error;
     double derivative = error - _lastErrors[motor];
-    double correction = (error * _proportionalCoefficients[motor])
-                       + (_integrals[motor] * _integralCoefficients[motor])
-                       + (derivative * _derivativeCoefficients[motor]);
+
+    double correction;
+    if (!_isEqual_DBL(_integralCoefficients[motor], 0))
+    {
+        correction = _proportionalCoefficients[motor] *
+                     (error
+                     + (1 / _integralCoefficients[motor]) * _integrals[motor]
+                     + _derivativeCoefficients[motor] * derivative);
+    }
+    else
+    {
+        correction = _proportionalCoefficients[motor] *
+                     (error
+                     + _derivativeCoefficients[motor] * derivative);
+    }
+
     _lastErrors[motor] = error;
 
     return correction;
+}
+
+bool Motor_Wrapper::_isEqual_DBL(double num, double target)
+{
+    if (fabs(num - target) <= __DBL_EPSILON__)
+    {
+        return true;
+    }
+    return false;
 }
