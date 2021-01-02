@@ -134,9 +134,8 @@ void Motor_Wrapper::update()
         {
             if (getSpeed(motor) != 0 && getState(motor))
             {
-                double correction = _getCorrection(motor);
-                double newSpeed = correction + _getLastInputtedSpeed(motor);
-                _lastInputtedSpeeds_PWM[motor] = newSpeed >= 0 ? newSpeed + 0.5 : newSpeed - 0.5;
+                double newSpeed = _getNewSpeed(motor);
+                _lastInputtedSpeeds_PWM[motor] = round(newSpeed);
                 _updateMotor(_getLastInputtedSpeed(motor), motor);
             }
         }
@@ -331,7 +330,7 @@ void Motor_Wrapper::_updateMotor(int newSpeed, size_t motor /*= MOTOR_LEFT*/)
     {
         int direction;
         double individualSpeed = newSpeed * getSpeedMultiplier(motor);
-        double inputSpeed = newSpeed < 0 ? -newSpeed : newSpeed;
+        double inputSpeed = constrain(abs(newSpeed), 0, 255);
         if (individualSpeed == 0)
         {
             direction = RELEASE;
@@ -354,7 +353,7 @@ void Motor_Wrapper::_updateMotor(int newSpeed, size_t motor /*= MOTOR_LEFT*/)
     }
 }
 
-double Motor_Wrapper::_getCorrection(size_t motor /*= MOTOR_LEFT*/)
+double Motor_Wrapper::_getNewSpeed(size_t motor /*= MOTOR_LEFT*/)
 {
     double target = getSpeed(motor) * _RPS_TO_COUNTS_PER_INTERVAL_MS;
     _elapsedCorrectedTime_MS[motor] = millis() - _lastCorrected_MS[motor];
