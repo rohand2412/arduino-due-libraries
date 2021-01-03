@@ -7,17 +7,18 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
                              unsigned int INTERVAL_MS /*= 20*/,
                              long int COUNTS_PER_REVOLUTION /*= 4560*/)
                              : _motorNum(motorNum),
+                             _pidNum(_motorNum + 1),
                              _INTERVAL_MS(INTERVAL_MS),
                              _COUNTS_PER_REVOLUTION(COUNTS_PER_REVOLUTION),
                              _RPS_TO_COUNTS_PER_INTERVAL_MS((_INTERVAL_MS * _COUNTS_PER_REVOLUTION) / 1000.0),
                              _COUNTS_PER_INTERVAL_MS_TO_RPS(1000.0 / (_INTERVAL_MS * _COUNTS_PER_REVOLUTION))
 {
     _motorsPtr = new Adafruit_DCMotor *[_motorNum];
-    _proportionalCoefficients = new double[_motorNum];
-    _integralCoefficients = new double[_motorNum];
-    _derivativeCoefficients = new double[_motorNum];
-    _integrals = new double[_motorNum];
-    _lastErrors = new double[_motorNum];
+    _proportionalCoefficients = new double[_pidNum];
+    _integralCoefficients = new double[_pidNum];
+    _derivativeCoefficients = new double[_pidNum];
+    _integrals = new double[_pidNum];
+    _lastErrors = new double[_pidNum];
     _speedMultipliers = new int[_motorNum];
     _targetSpeeds_RPS = new double[_motorNum];
     _actualSpeeds_RPS = new double[_motorNum];
@@ -29,11 +30,6 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
     for (size_t motor = 0; motor < _motorNum; motor++)
     {
         _motorsPtr[motor] = _motorShield.getMotor(ports[motor]);
-        _proportionalCoefficients[motor] = 1;
-        _integralCoefficients[motor] = 0;
-        _derivativeCoefficients[motor] = 0;
-        _integrals[motor] = 0;
-        _lastErrors[motor] = 0;
         _speedMultipliers[motor] = MOTOR_NO_FLIP;
         _targetSpeeds_RPS[motor] = 0;
         _actualSpeeds_RPS[motor] = 0;
@@ -41,6 +37,15 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
         _states[motor] = false;
         _lastCorrected_MS[motor] = 0;
         _elapsedCorrectedTime_MS[motor] = 0;
+    }
+
+    for (size_t pid = 0; pid < _pidNum; pid++)
+    {
+        _proportionalCoefficients[pid] = 1;
+        _integralCoefficients[pid] = 0;
+        _derivativeCoefficients[pid] = 0;
+        _integrals[pid] = 0;
+        _lastErrors[pid] = 0;
     }
 
     _lastUpdated_MS = 0;
@@ -130,15 +135,27 @@ void Motor_Wrapper::update()
 {
     if (millis() - _lastUpdated_MS >= _INTERVAL_MS)
     {
+        double newSpeeds[_motorNum];
         for (size_t motor = 0; motor < _motorNum; motor++)
         {
             if (getSpeed(motor) != 0 && getState(motor))
             {
-                double newSpeed = _getNewSpeed(motor);
-                _lastInputtedSpeeds_PWM[motor] = round(newSpeed);
-                _updateMotor(_getLastInputtedSpeed(motor), motor);
+                newSpeeds[motor] = _getNewSpeed(motor);
             }
         }
+
+        double correction = _getNewSpeed(MOTOR_DIF);
+        int sign = 1;
+        for (size_t motor = 0; motor < _motorNum; motor++)
+        {
+            if (getSpeed(motor) != 0 && getState(motor))
+            {
+                _lastInputtedSpeeds_PWM[motor] = round(newSpeeds[motor] + sign * correction);
+                _updateMotor(_getLastInputtedSpeed(motor), motor);
+                sign *= -1;
+            }
+        }
+
         _justUpdated = true;
         _lastUpdated_MS = millis();
     }
@@ -355,13 +372,21 @@ void Motor_Wrapper::_updateMotor(int newSpeed, size_t motor /*= MOTOR_LEFT*/)
 
 double Motor_Wrapper::_getNewSpeed(size_t motor /*= MOTOR_LEFT*/)
 {
-    double target = getSpeed(motor) * _RPS_TO_COUNTS_PER_INTERVAL_MS;
-    _elapsedCorrectedTime_MS[motor] = millis() - _lastCorrected_MS[motor];
-    long int count = getCount(motor);
-    double value = count * (double) _INTERVAL_MS / (double) _elapsedCorrectedTime_MS[motor];
-    _actualSpeeds_RPS[motor] = value * _COUNTS_PER_INTERVAL_MS_TO_RPS;
+    double error;
+    if (motor == MOTOR_DIF)
+    {
+        error = _lastErrors[MOTOR_LEFT] - _lastErrors[MOTOR_RIGHT];
+    }
+    else
+    {
+        double target = getSpeed(motor) * _RPS_TO_COUNTS_PER_INTERVAL_MS;
+        _elapsedCorrectedTime_MS[motor] = millis() - _lastCorrected_MS[motor];
+        long int count = getCount(motor);
+        double value = count * (double) _INTERVAL_MS / (double) _elapsedCorrectedTime_MS[motor];
+        _actualSpeeds_RPS[motor] = value * _COUNTS_PER_INTERVAL_MS_TO_RPS;
+        error = target - value;
+    }
 
-    double error = target - value;
     _integrals[motor] += error;
     double derivative = error - _lastErrors[motor];
 
@@ -381,8 +406,12 @@ double Motor_Wrapper::_getNewSpeed(size_t motor /*= MOTOR_LEFT*/)
     }
 
     _lastErrors[motor] = error;
-    _encoders.resetCount(motor);
-    _lastCorrected_MS[motor] = millis();
+
+    if (!(motor == MOTOR_DIF))
+    {
+        _encoders.resetCount(motor);
+        _lastCorrected_MS[motor] = millis();
+    }
 
     return correction;
 }

@@ -13,6 +13,7 @@ class Motor_Wrapper
 
         Encoder_Wrapper _encoders;
 
+        const size_t _pidNum;
         double *_proportionalCoefficients;
         double *_integralCoefficients;
         double *_derivativeCoefficients;
@@ -46,6 +47,7 @@ class Motor_Wrapper
         static const size_t MOTOR_LEFT = 0;
         static const size_t MOTOR_RIGHT = 1;
         static const size_t MOTOR_ALL = 0xFFFFFFFF; //= -1
+        static const size_t MOTOR_DIF = 2;
 
         static const int MOTOR_FLIP = -1;
         static const int MOTOR_NO_FLIP = 1;
