@@ -177,12 +177,12 @@ bool Motor_Wrapper::getJustUpdated()
     }
 }
 
-unsigned int Motor_Wrapper::getLastCorrected_MS(size_t motor /*= MOTOR_LEFT*/)
+unsigned int Motor_Wrapper::getLastCorrected_MS(size_t motor /*= MOTOR_LEFT*/) const
 {
     return _lastCorrected_MS[motor];
 }
 
-unsigned int Motor_Wrapper::getElapsedCorrectedTime_MS(size_t motor /*= MOTOR_LEFT*/)
+unsigned int Motor_Wrapper::getElapsedCorrectedTime_MS(size_t motor /*= MOTOR_LEFT*/) const
 {
     return _elapsedCorrectedTime_MS[motor];
 }

@@ -84,9 +84,9 @@ class Motor_Wrapper
 
         bool getJustUpdated();
 
-        unsigned int getLastCorrected_MS(size_t motor = MOTOR_LEFT);
+        unsigned int getLastCorrected_MS(size_t motor = MOTOR_LEFT) const;
 
-        unsigned int getElapsedCorrectedTime_MS(size_t motor = MOTOR_LEFT);
+        unsigned int getElapsedCorrectedTime_MS(size_t motor = MOTOR_LEFT) const;
 
         long int getUpdateCounts(size_t motor = MOTOR_LEFT) const;
 
