@@ -23,6 +23,7 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
     _targetSpeeds_RPS = new double[_motorNum];
     _actualSpeeds_RPS = new double[_motorNum];
     _lastInputtedSpeeds_PWM = new int[_motorNum];
+    _updateCounts = new long int[_motorNum];
     _states = new bool[_motorNum];
     _lastCorrected_MS = new unsigned int[_motorNum];
     _elapsedCorrectedTime_MS = new unsigned int[_motorNum];
@@ -34,6 +35,7 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
         _targetSpeeds_RPS[motor] = 0;
         _actualSpeeds_RPS[motor] = 0;
         _lastInputtedSpeeds_PWM[motor] = 0;
+        _updateCounts[motor] = 0;
         _states[motor] = false;
         _lastCorrected_MS[motor] = 0;
         _elapsedCorrectedTime_MS[motor] = 0;
@@ -73,6 +75,7 @@ Motor_Wrapper::~Motor_Wrapper()
     delete[] _targetSpeeds_RPS;
     delete[] _actualSpeeds_RPS;
     delete[] _lastInputtedSpeeds_PWM;
+    delete[] _updateCounts;
     delete[] _states;
     delete[] _lastCorrected_MS;
     delete[] _elapsedCorrectedTime_MS;
@@ -182,6 +185,11 @@ unsigned int Motor_Wrapper::getLastCorrected_MS(size_t motor /*= MOTOR_LEFT*/)
 unsigned int Motor_Wrapper::getElapsedCorrectedTime_MS(size_t motor /*= MOTOR_LEFT*/)
 {
     return _elapsedCorrectedTime_MS[motor];
+}
+
+long int Motor_Wrapper::getUpdateCounts(size_t motor /*= MOTOR_LEFT*/) const
+{
+    return _updateCounts[motor];
 }
 
 void Motor_Wrapper::setSpeedMultiplier(int speedMultiplier, size_t motor /*= MOTOR_ALL*/)
@@ -381,8 +389,8 @@ double Motor_Wrapper::_getNewSpeed(size_t motor /*= MOTOR_LEFT*/)
     {
         double target = getSpeed(motor) * _RPS_TO_COUNTS_PER_INTERVAL_MS;
         _elapsedCorrectedTime_MS[motor] = millis() - _lastCorrected_MS[motor];
-        long int count = getCount(motor);
-        double value = count * (double) _INTERVAL_MS / (double) _elapsedCorrectedTime_MS[motor];
+        _updateCounts[motor] = getCount(motor);
+        double value = _updateCounts[motor] * (double) _INTERVAL_MS / (double) _elapsedCorrectedTime_MS[motor];
         _actualSpeeds_RPS[motor] = value * _COUNTS_PER_INTERVAL_MS_TO_RPS;
         error = target - value;
     }

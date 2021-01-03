@@ -25,6 +25,7 @@ class Motor_Wrapper
         double* _targetSpeeds_RPS;
         double* _actualSpeeds_RPS;
         int* _lastInputtedSpeeds_PWM;
+        long int *_updateCounts;
 
         bool* _states;
 
@@ -86,6 +87,8 @@ class Motor_Wrapper
         unsigned int getLastCorrected_MS(size_t motor = MOTOR_LEFT);
 
         unsigned int getElapsedCorrectedTime_MS(size_t motor = MOTOR_LEFT);
+
+        long int getUpdateCounts(size_t motor = MOTOR_LEFT) const;
 
         void setSpeedMultiplier(int speedMultiplier, size_t motor = MOTOR_ALL);
 
