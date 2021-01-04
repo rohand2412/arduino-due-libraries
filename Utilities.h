@@ -5,7 +5,12 @@ class Utilities
 {
     public:
         static size_t indexCap(size_t index, size_t maxIndex);
-    
+
+        static double calculatePid(double error, double derivative, double integral,
+                                   double kp, double ki, double kd);
+
+        static bool isEqual_DBL(double num, double target);
+
     private:
         Utilities();
 };

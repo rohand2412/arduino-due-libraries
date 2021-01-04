@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include "Motor_Wrapper.h"
-#include "ArduinoTrace.h"
+#include "Utilities.h"
 
 Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
                              size_t motorNum,
@@ -398,20 +398,10 @@ double Motor_Wrapper::_getNewSpeed(size_t motor /*= MOTOR_LEFT*/)
     _integrals[motor] += error;
     double derivative = error - _lastErrors[motor];
 
-    double correction;
-    if (!_isEqual_DBL(_integralCoefficients[motor], 0))
-    {
-        correction = _proportionalCoefficients[motor] *
-                     (error
-                     + (1 / _integralCoefficients[motor]) * _integrals[motor]
-                     + _derivativeCoefficients[motor] * derivative);
-    }
-    else
-    {
-        correction = _proportionalCoefficients[motor] *
-                     (error
-                     + _derivativeCoefficients[motor] * derivative);
-    }
+    double correction = Utilities::calculatePid(error, derivative, _integrals[motor],
+                                                _proportionalCoefficients[motor],
+                                                _integralCoefficients[motor],
+                                                _derivativeCoefficients[motor]);
 
     _lastErrors[motor] = error;
 
@@ -422,13 +412,4 @@ double Motor_Wrapper::_getNewSpeed(size_t motor /*= MOTOR_LEFT*/)
     }
 
     return correction;
-}
-
-bool Motor_Wrapper::_isEqual_DBL(double num, double target)
-{
-    if (fabs(num - target) <= __DBL_EPSILON__)
-    {
-        return true;
-    }
-    return false;
 }

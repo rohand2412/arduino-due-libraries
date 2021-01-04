@@ -133,6 +133,4 @@ class Motor_Wrapper
         void _updateMotor(int newSpeed, size_t motor = MOTOR_LEFT);
 
         double _getNewSpeed(size_t motor = MOTOR_LEFT);
-
-        bool _isEqual_DBL(double num, double target);
 };

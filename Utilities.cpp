@@ -17,3 +17,44 @@ size_t Utilities::indexCap(size_t index, size_t maxIndex)
     //Return index
     return index;
 }
+
+double Utilities::calculatePid(double error, double derivative, double integral,
+                               double kp, double ki, double kd)
+{
+    //Declare result var
+    double result;
+
+    //Check if integral coefficient is not 0
+    if (!isEqual_DBL(ki, 0))
+    {
+        //Apply PID formula
+        result = kp *
+                 (error
+                 + (1 / ki) * integral
+                 + kd * derivative);
+    }
+    //integral coefficient is 0
+    else
+    {
+        //Apply PD formula
+        result = kp *
+                 (error
+                 + kd * derivative);
+    }
+
+    //Return result
+    return result;
+}
+
+bool Utilities::isEqual_DBL(double num, double target)
+{
+    //Check if num is near target by __DBL_EPSILON__
+    //Check is necessary due to floating point precision
+    if (fabs(num - target) <= __DBL_EPSILON__)
+    {
+        //true if near
+        return true;
+    }
+    //Otherwise false
+    return false;
+}
