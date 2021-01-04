@@ -34,8 +34,8 @@ class Motor_Wrapper
         const double _RPS_TO_COUNTS_PER_INTERVAL_MS;
         const double _COUNTS_PER_INTERVAL_MS_TO_RPS;
 
-        unsigned int *_lastCorrected_MS;
-        unsigned int *_elapsedCorrectedTime_MS;
+        unsigned int *_lastNewSpeed_MS;
+        unsigned int *_elapsedNewSpeedTime_MS;
         unsigned int _lastUpdated_MS;
         bool _justUpdated = false;
 
@@ -84,9 +84,9 @@ class Motor_Wrapper
 
         bool getJustUpdated();
 
-        unsigned int getLastCorrected_MS(size_t motor = MOTOR_LEFT) const;
+        unsigned int getLastNewSpeed_MS(size_t motor = MOTOR_LEFT) const;
 
-        unsigned int getElapsedCorrectedTime_MS(size_t motor = MOTOR_LEFT) const;
+        unsigned int getElapsedNewSpeedTime_MS(size_t motor = MOTOR_LEFT) const;
 
         long int getUpdateCounts(size_t motor = MOTOR_LEFT) const;
 
@@ -132,7 +132,7 @@ class Motor_Wrapper
 
         void _updateMotor(int newSpeed, size_t motor = MOTOR_LEFT);
 
-        double _getNewSpeed(size_t motor = MOTOR_LEFT);
+        double _getNewSpeed(size_t pid = MOTOR_LEFT);
 
         void _setPid(double proportionalCoefficient,
                      double integralCoefficient,
