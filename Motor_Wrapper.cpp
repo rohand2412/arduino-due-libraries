@@ -95,16 +95,18 @@ void Motor_Wrapper::setPid(double proportionalCoefficient,
     {
         for (size_t motor = 0; motor < _motorNum; motor++)
         {
-            _proportionalCoefficients[motor] = proportionalCoefficient;
-            _integralCoefficients[motor] = integralCoefficient;
-            _derivativeCoefficients[motor] = derivativeCoefficient;
+            _setPid(proportionalCoefficient,
+                    integralCoefficient,
+                    derivativeCoefficient,
+                    motor);
         }
     }
     else
     {
-        _proportionalCoefficients[motor] = proportionalCoefficient;
-        _integralCoefficients[motor] = integralCoefficient;
-        _derivativeCoefficients[motor] = derivativeCoefficient;
+        _setPid(proportionalCoefficient,
+                integralCoefficient,
+                derivativeCoefficient,
+                motor);
     }
 }
 
@@ -114,10 +116,10 @@ void Motor_Wrapper::setPid(double* proportionalCoefficients,
 {
     for (size_t motor = 0; motor < _motorNum; motor++)
     {
-        setPid(proportionalCoefficients[motor],
-               integralCoefficients[motor],
-               derivativeCoefficients[motor],
-               motor);
+        _setPid(proportionalCoefficients[motor],
+                integralCoefficients[motor],
+                derivativeCoefficients[motor],
+                motor);
     }
 }
 
@@ -198,12 +200,12 @@ void Motor_Wrapper::setSpeedMultiplier(int speedMultiplier, size_t motor /*= MOT
     {
         for (size_t motor = 0; motor < _motorNum; motor++)
         {
-            _speedMultipliers[motor] = speedMultiplier;
+            _setSpeedMultiplier(speedMultiplier, motor);
         }
     }
     else
     {
-        _speedMultipliers[motor] = speedMultiplier;
+        _setSpeedMultiplier(speedMultiplier, motor);
     }
 }
 
@@ -211,7 +213,7 @@ void Motor_Wrapper::setSpeedMultiplier(int* speedMultipliers)
 {
     for (size_t motor = 0; motor < _motorNum; motor++)
     {
-        setSpeedMultiplier(speedMultipliers[motor], motor);
+        _setSpeedMultiplier(speedMultipliers[motor], motor);
     }
 }
 
@@ -226,22 +228,12 @@ void Motor_Wrapper::setSpeed(double speed, size_t motor /*= MOTOR_ALL*/)
     {
         for (size_t motor = 0; motor < _motorNum; motor++)
         {
-            _targetSpeeds_RPS[motor] = speed;
-
-            if (!speed)
-            {
-                _motorsPtr[motor]->run(RELEASE);
-            }
+            _setSpeed(speed, motor);
         }
     }
     else
     {
-        _targetSpeeds_RPS[motor] = speed;
-
-        if (!speed)
-        {
-            _motorsPtr[motor]->run(RELEASE);
-        }
+        _setSpeed(speed, motor);
     }
 }
 
@@ -249,7 +241,7 @@ void Motor_Wrapper::setSpeed(double* speeds)
 {
     for (size_t motor = 0; motor < _motorNum; motor++)
     {
-        setSpeed(speeds[motor], motor);
+        _setSpeed(speeds[motor], motor);
     }
 }
 
@@ -269,21 +261,12 @@ void Motor_Wrapper::setState(bool state, size_t motor /*= MOTOR_ALL*/)
     {
         for (size_t motor = 0; motor < _motorNum; motor++)
         {
-            _states[motor] = state;
-
-            if (!state)
-            {
-                _motorsPtr[motor]->run(RELEASE);
-            }
+            _setState(state, motor);
         }
     }
     else
     {
-        _states[motor] = state;
-        if (!state)
-        {
-            _motorsPtr[motor]->run(RELEASE);
-        }
+        _setState(state, motor);
     }
 }
 
@@ -291,7 +274,7 @@ void Motor_Wrapper::setState(bool* states)
 {
     for (size_t motor = 0; motor < _motorNum; motor++)
     {
-        setState(states[motor], motor);
+        _setState(states[motor], motor);
     }
 }
 
@@ -412,4 +395,39 @@ double Motor_Wrapper::_getNewSpeed(size_t motor /*= MOTOR_LEFT*/)
     }
 
     return correction;
+}
+
+void Motor_Wrapper::_setPid(double proportionalCoefficient,
+                            double integralCoefficient,
+                            double derivativeCoefficient,
+                            size_t motor)
+{
+    _proportionalCoefficients[motor] = proportionalCoefficient;
+    _integralCoefficients[motor] = integralCoefficient;
+    _derivativeCoefficients[motor] = derivativeCoefficient;
+}
+
+void Motor_Wrapper::_setSpeedMultiplier(int speedMultiplier, size_t motor)
+{
+    _speedMultipliers[motor] = speedMultiplier;
+}
+
+void Motor_Wrapper::_setSpeed(double speed, size_t motor)
+{
+    _targetSpeeds_RPS[motor] = speed;
+
+    if (!speed)
+    {
+        _motorsPtr[motor]->run(RELEASE);
+    }
+}
+
+void Motor_Wrapper::_setState(bool state, size_t motor)
+{
+    _states[motor] = state;
+
+    if (!state)
+    {
+        _motorsPtr[motor]->run(RELEASE);
+    }
 }

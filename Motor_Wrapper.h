@@ -133,4 +133,15 @@ class Motor_Wrapper
         void _updateMotor(int newSpeed, size_t motor = MOTOR_LEFT);
 
         double _getNewSpeed(size_t motor = MOTOR_LEFT);
+
+        void _setPid(double proportionalCoefficient,
+                     double integralCoefficient,
+                     double derivativeCoefficient,
+                     size_t motor);
+        
+        void _setSpeedMultiplier(int speedMultiplier, size_t motor);
+
+        void _setSpeed(double speed, size_t motor);
+
+        void _setState(bool state, size_t motor);
 };
