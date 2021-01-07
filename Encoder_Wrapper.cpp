@@ -217,53 +217,27 @@ size_t Encoder_Wrapper::_find(unsigned int& newPins, size_t newPinLen, unsigned 
     //Convert first pin to pin pair array
     unsigned int *newPinsPtr = &newPins;
 
-    //Pin iterator initialized where loop won't destroy it
-    size_t newPin = 0;
-    size_t oldPin = 0;
+    //Maps local pin indices to global pin indices
+    size_t pinIndices[newPinLen];
 
-    //Iterate through old pin data
-    for (size_t oldSensor = 0; oldSensor < oldSensorNum; oldSensor++)
+    //Iterate through pins
+    for (size_t pin = 0; pin < newPinLen; pin++)
     {
-        //Switch between search methods for ordered and unordered pins
-        for (size_t searchMethod = 0; searchMethod < 2; searchMethod++)
+        //Populate _pinIndices
+        pinIndices[pin] = _find(newPinsPtr[pin], oldPins, oldSensorNum * PINS_PER_SENSOR);
+
+        //Check if any of the pins weren't found
+        if (pinIndices[pin] == 0xFFFFFFFF) //== -1
         {
-            //Iterate through new pins
-            for (newPin = 0; newPin < newPinLen; newPin++)
-            {
-                //Search method one assumes that pin is in correct order
-                if (searchMethod == 0)
-                {
-                    //oldPin and newPin act as same
-                    oldPin = newPin;
-                }
-
-                //Search method two assumes that pin is in wrong order
-                else if (searchMethod == 1)
-                {
-                    //oldPin is iterating backwards unlike newPin
-                    //1 is because indices begin on 0 not 1
-                    oldPin = newPinLen - newPin - 1;
-                }
-
-                //Compare old data to new data check for similarity
-                if (oldPins[oldSensor * PINS_PER_SENSOR + oldPin] != newPinsPtr[newPin])
-                {
-                    //Freeze newPin at current iteration value
-                    break;
-                }
-            }
-
-            //Check if loop wasn't broken and all pins matched
-            if (newPin == newPinLen)
-            {
-                //Return running iterator if match found
-                return oldSensor;
-            }
+            //Return -1 if no match found
+            return 0xFFFFFFFF;
         }
     }
 
-    //Return -1 if no match found
-    return 0xFFFFFFFF;
+    //Pin Index is arbitrary
+    //Int truncation will make result equivalent
+    //to global sensor index of the pins
+    return pinIndices[0] / newPinLen;
 }
 
 size_t Encoder_Wrapper::_find(size_t newPinIndex, size_t *oldPinIndices, size_t oldPinIndicesNum)
