@@ -36,7 +36,7 @@ class Encoder_Wrapper
 
         void setCount(size_t sensor, long int newCount); //No default param in order to preserve order of params
 
-        void resetCount(size_t sensor = 0xFFFFFFFF);    //value = -1
+        void resetCount(size_t sensor = 0xFFFFFFFF);    //sensor = -1
 
         long int getCount(size_t sensor = ENCODER_LEFT);
 
