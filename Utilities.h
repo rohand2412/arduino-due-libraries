@@ -11,6 +11,8 @@ class Utilities
 
         static bool isEqual_DBL(double num, double target);
 
+        static unsigned int average(unsigned int* buffer, size_t endLen, size_t startLen = 0);
+
     private:
         Utilities();
 };

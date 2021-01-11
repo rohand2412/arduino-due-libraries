@@ -58,3 +58,13 @@ bool Utilities::isEqual_DBL(double num, double target)
     //Otherwise false
     return false;
 }
+
+unsigned int Utilities::average(unsigned int* buffer, size_t endLen, size_t startLen /*= 0*/)
+{
+  unsigned int sum = 0;
+  for (size_t item = startLen; item < endLen; item++)
+  {
+    sum += buffer[item];
+  }
+  return sum / (endLen - startLen);
+}
