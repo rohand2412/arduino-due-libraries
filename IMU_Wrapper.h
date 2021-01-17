@@ -25,14 +25,24 @@ class IMU_Wrapper
         const unsigned int _BNO055_SAMPLERATE_DELAY_MS = 100;
         unsigned int _lastUpdated_MS;
 
+        const unsigned int _RST;
+
     public:
-        IMU_Wrapper(unsigned int sensorID = 55, uint8_t address = 0x28);
+        IMU_Wrapper(unsigned int RST, unsigned int sensorID = 55, uint8_t address = 0x28);
 
         void begin(Adafruit_BNO055::adafruit_bno055_opmode_t mode = Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF);
+
+        void setExtCrystalUse(bool usextal);
 
         void update();
 
         void reset(double yaw = 0, double pitch = 0, double roll = 0);
+
+        void resetSensor();
+
+        static void displayOffsets(const adafruit_bno055_offsets_t &calibData);
+
+        void displayOffsets();
 
         void displaySensorDetails();
 
@@ -47,7 +57,9 @@ class IMU_Wrapper
         double getPitch() const;
 
         double getRoll() const;
-    
+
+        adafruit_bno055_offsets_t getOffsets();
+
     private:
         void _overflow(double& oldRaw, double& raw, double& axis);
 };
