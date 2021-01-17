@@ -16,3 +16,19 @@ class Utilities
     private:
         Utilities();
 };
+
+class AverageSign
+{
+    private:
+        unsigned int *_ints;
+        bool *_signs;
+        size_t _len;
+        size_t _index = 0;
+
+    public:
+        AverageSign(size_t len);
+
+        void setInt(int val);
+
+        int getAverage();
+};

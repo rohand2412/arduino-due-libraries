@@ -61,10 +61,73 @@ bool Utilities::isEqual_DBL(double num, double target)
 
 unsigned int Utilities::average(unsigned int* buffer, size_t endLen, size_t startLen /*= 0*/)
 {
-  unsigned int sum = 0;
-  for (size_t item = startLen; item < endLen; item++)
-  {
-    sum += buffer[item];
-  }
-  return sum / (endLen - startLen);
+    //Initialize sum
+    unsigned int sum = 0;
+
+    //Add up all values
+    for (size_t item = startLen; item < endLen; item++)
+    {
+        sum += buffer[item];
+    }
+
+    //Divide by num of items to get average
+    return sum / (endLen - startLen);
+}
+
+AverageSign::AverageSign(size_t len)
+{
+    //Store num of items
+    _len = len;
+
+    //Allocate memory needed
+    _ints = new unsigned int[_len];
+    _signs = new bool[_len];
+
+    //Populate memory
+    for (size_t num = 0; num < _len; num++)
+    {
+        _ints[num] = 0;
+        _signs[num] = 1;
+    }
+}
+
+void AverageSign::setInt(int val)
+{
+    //Store absolute value of value
+    _ints[_index] = abs(val);
+
+    //Store sign
+    _signs[_index] = !(val < 0);
+
+    //Increment for next index
+    _index++;
+}
+
+int AverageSign::getAverage()
+{
+    //Get average of absolute values
+    int avg = Utilities::average(_ints, _len);
+
+    //Initialize num of negative nums
+    unsigned int numNeg = 0;
+
+    //Iterate through numbers
+    for (size_t num = 0; num < _len; num++)
+    {
+        //Count how many negative nums
+        numNeg += !_signs[num];
+    }
+
+    //If more than half of items are neg
+    if (numNeg > _len / 2)
+    {
+        //Return negative avg
+        return avg * -1;
+    }
+    //More than half of items are pos
+    else
+    {
+        //Return positive avg
+        return avg;
+    }
 }
