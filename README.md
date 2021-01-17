@@ -6,12 +6,6 @@ For now, please note that we did not write the following libraries and that if y
  - Adafruit_MotorShield.h
  - Adafruit_MS_PWMServo_Driver.cpp
  - Adafruit_MS_PWMServo_Driver.h
- - helper_3dmath.h
- - I2Cdev.cpp
- - I2Cdev.h
- - MPU6050_6axis_MotionApps20.h
- - MPU6050.cpp
- - MPU6050.h
  - Servo.cpp
  - Servo.h
  - ServoTimers.h
@@ -21,10 +15,16 @@ For now, please note that we did not write the following libraries and that if y
  - direct_pin_read.h
  - interrupt_config.h
  - interrupt_pins.h
+ - Adafruit_BNO055.cpp
+ - Adafruit_BNO055.h
+ - Adafruit_Sensor.cpp
+ - Adafruit_Sensor.h
+ - imumaths.h
+ - matrix.h
+ - quaternion.h
+ - vector.h
 
  We did however write the following libraries.
- - IMU.cpp
- - IMU.h
  - IMU_Wrapper.cpp
  - IMU_Wrapper.h
  - Servo_Wrapper.cpp
@@ -35,3 +35,7 @@ For now, please note that we did not write the following libraries and that if y
  - Ultrasonic_Wrapper.h
  - Encoder_Wrapper.cpp
  - Encoder_Wrapper.h
+ - Motor_Wrapper.cpp
+ - Motor_Wrapper.h
+ - Utilities.cpp
+ - Utilities.h
