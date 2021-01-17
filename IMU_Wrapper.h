@@ -10,9 +10,6 @@ class IMU_Wrapper
         Adafruit_BNO055 *_bno;
         sensor_t _sensor;
         sensors_event_t _event;
-        uint8_t _system_status = 0;
-        uint8_t _self_test_results = 0;
-        uint8_t _system_error = 0;
         uint8_t _systemCal = 0;
         uint8_t _gyroCal = 0;
         uint8_t _accelCal = 0;
@@ -26,6 +23,7 @@ class IMU_Wrapper
         double _roll = 0;
 
         const unsigned int _BNO055_SAMPLERATE_DELAY_MS = 100;
+        unsigned int _lastUpdated_MS;
 
     public:
         IMU_Wrapper(unsigned int sensorID = 55, uint8_t address = 0x28);

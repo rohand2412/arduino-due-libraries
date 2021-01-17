@@ -23,28 +23,26 @@ void IMU_Wrapper::begin(Adafruit_BNO055::adafruit_bno055_opmode_t mode /*= Adafr
 
 void IMU_Wrapper::update()
 {
-  delay(_BNO055_SAMPLERATE_DELAY_MS);
+  if (millis() - _lastUpdated_MS >= _BNO055_SAMPLERATE_DELAY_MS)
+  {
+    _bno->getSensor(&_sensor);
 
-  _bno->getSensor(&_sensor);
+    _systemCal = 0;
+    _gyroCal = 0;
+    _accelCal = 0;
+    _magCal = 0;
+    _bno->getCalibration(&_systemCal, &_gyroCal, &_accelCal, &_magCal);
 
-  _system_status = 0;
-  _self_test_results = 0;
-  _system_error = 0;
-  _bno->getSystemStatus(&_system_status, &_self_test_results, &_system_error);
+    _bno->getEvent(&_event);
+    double yawRaw = _event.orientation.x;
+    double pitchRaw = _event.orientation.y;
+    double rollRaw = _event.orientation.z;
+    _overflow(_oldYawRaw, yawRaw, _yaw);
+    _overflow(_oldPitchRaw, pitchRaw, _pitch);
+    _overflow(_oldRollRaw, rollRaw, _roll);
 
-  _systemCal = 0;
-  _gyroCal = 0;
-  _accelCal = 0;
-  _magCal = 0;
-  _bno->getCalibration(&_systemCal, &_gyroCal, &_accelCal, &_magCal);
-
-  _bno->getEvent(&_event);
-  double yawRaw = _event.orientation.x;
-  double pitchRaw = _event.orientation.y;
-  double rollRaw = _event.orientation.z;
-  _overflow(_oldYawRaw, yawRaw, _yaw);
-  _overflow(_oldPitchRaw, pitchRaw, _pitch);
-  _overflow(_oldRollRaw, rollRaw, _roll);
+    _lastUpdated_MS = millis();
+  }
 }
 
 void IMU_Wrapper::reset(double yaw /*=0*/, double pitch /*=0*/, double roll /*=0*/)
@@ -71,7 +69,6 @@ void IMU_Wrapper::displaySensorDetails()
   Serial.print  ("Resolution:   "); Serial.print(_sensor.resolution); Serial.println(" xxx");
   Serial.println("------------------------------------");
   Serial.println("");
-  delay(500);
 }
 
 /**************************************************************************/
@@ -81,15 +78,19 @@ void IMU_Wrapper::displaySensorDetails()
 /**************************************************************************/
 void IMU_Wrapper::displaySensorStatus()
 {
+  uint8_t system_status = 0;
+  uint8_t self_test_results = 0;
+  uint8_t system_error = 0;
+  _bno->getSystemStatus(&system_status, &self_test_results, &system_error);
+
   Serial.println("");
   Serial.print("System Status: 0x");
-  Serial.println(_system_status, HEX);
+  Serial.println(system_status, HEX);
   Serial.print("Self Test:     0x");
-  Serial.println(_self_test_results, HEX);
+  Serial.println(self_test_results, HEX);
   Serial.print("System Error:  0x");
-  Serial.println(_system_error, HEX);
+  Serial.println(system_error, HEX);
   Serial.println("");
-  delay(500);
 }
 
 /**************************************************************************/
