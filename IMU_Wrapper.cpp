@@ -6,7 +6,48 @@ IMU_Wrapper::IMU_Wrapper(unsigned int RST, unsigned int sensorID /*= 55*/, uint8
   _bno = new Adafruit_BNO055(sensorID, address);
 }
 
+void IMU_Wrapper::setOffsets(adafruit_bno055_offsets_t offsets)
+{
+  _offsets = offsets;
+  _haveOffsets = true;
+}
+
 void IMU_Wrapper::begin(Adafruit_BNO055::adafruit_bno055_opmode_t mode /*= Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF*/)
+{
+  pinMode(_RST, OUTPUT);
+  digitalWrite(_RST, HIGH);
+
+  if(!_bno->begin(mode))
+  {
+    Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+    while(1);
+  }
+
+  if (_haveOffsets)
+  {
+    _bno->setSensorOffsets(_offsets);
+  }
+  else
+  {
+    while (true)
+    {
+      Serial.println("[ERROR] NO OFFSETS WERE GIVEN FOR IMU");
+    }
+  }
+
+  delay(1000);
+
+  _bno->setExtCrystalUse(true);
+
+  while (!(_systemCal == 3 && _gyroCal == 3 && _accelCal == 3 && _magCal == 3))
+  {
+    update();
+  }
+
+  update();
+}
+
+void IMU_Wrapper::beginWithoutOffsets(Adafruit_BNO055::adafruit_bno055_opmode_t mode /*= Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF*/)
 {
   pinMode(_RST, OUTPUT);
   digitalWrite(_RST, HIGH);
