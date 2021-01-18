@@ -33,11 +33,11 @@ class IMU_Wrapper
     public:
         IMU_Wrapper(unsigned int RST, unsigned int sensorID = 55, uint8_t address = 0x28);
 
-        void setOffsets(adafruit_bno055_offsets_t offsets);
+        void setOffsets(const adafruit_bno055_offsets_t &offsets);
 
-        void begin(Adafruit_BNO055::adafruit_bno055_opmode_t mode = Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF);
+        void begin(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode = Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF);
 
-        void beginWithoutOffsets(Adafruit_BNO055::adafruit_bno055_opmode_t mode = Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF);
+        void beginWithoutOffsets(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode = Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF);
 
         void setExtCrystalUse(bool usextal);
 

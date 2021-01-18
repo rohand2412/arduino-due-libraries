@@ -6,13 +6,13 @@ IMU_Wrapper::IMU_Wrapper(unsigned int RST, unsigned int sensorID /*= 55*/, uint8
   _bno = new Adafruit_BNO055(sensorID, address);
 }
 
-void IMU_Wrapper::setOffsets(adafruit_bno055_offsets_t offsets)
+void IMU_Wrapper::setOffsets(const adafruit_bno055_offsets_t &offsets)
 {
   _offsets = offsets;
   _haveOffsets = true;
 }
 
-void IMU_Wrapper::begin(Adafruit_BNO055::adafruit_bno055_opmode_t mode /*= Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF*/)
+void IMU_Wrapper::begin(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode /*= Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF*/)
 {
   pinMode(_RST, OUTPUT);
   digitalWrite(_RST, HIGH);
@@ -47,7 +47,7 @@ void IMU_Wrapper::begin(Adafruit_BNO055::adafruit_bno055_opmode_t mode /*= Adafr
   update();
 }
 
-void IMU_Wrapper::beginWithoutOffsets(Adafruit_BNO055::adafruit_bno055_opmode_t mode /*= Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF*/)
+void IMU_Wrapper::beginWithoutOffsets(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode /*= Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF*/)
 {
   pinMode(_RST, OUTPUT);
   digitalWrite(_RST, HIGH);
