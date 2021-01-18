@@ -39,7 +39,7 @@ void IMU_Wrapper::begin(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode /*
 
   _bno->setExtCrystalUse(true);
 
-  while (!(_systemCal == 3 && _gyroCal == 3 && _accelCal == 3 && _magCal == 3))
+  while (!isFullyCalibrated())
   {
     update();
   }
@@ -254,7 +254,7 @@ adafruit_bno055_offsets_t IMU_Wrapper::getOffsets()
   _accelCal = 0;
   _magCal = 0;
 
-  while (!(_systemCal == 3 && _gyroCal == 3 && _accelCal == 3 && _magCal == 3))
+  while (!isFullyCalibrated())
   {
     /* Poll sensor for new data */
     update();
@@ -293,4 +293,9 @@ void IMU_Wrapper::_overflow(double& oldRaw, double& raw, double& axis)
   }
   axis += raw - oldRaw;
   oldRaw = raw;
+}
+
+bool IMU_Wrapper::isFullyCalibrated()
+{
+  return _systemCal == 3 && _gyroCal == 3 && _accelCal == 3 && _magCal == 3;
 }

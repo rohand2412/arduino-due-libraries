@@ -69,6 +69,8 @@ class IMU_Wrapper
 
         adafruit_bno055_offsets_t getOffsets();
 
+        bool isFullyCalibrated();
+
     private:
         void _overflow(double& oldRaw, double& raw, double& axis);
 };
