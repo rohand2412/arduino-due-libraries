@@ -194,6 +194,13 @@ double IMU_Wrapper::getRoll() const
   return _roll;
 }
 
+adafruit_bno055_offsets_t IMU_Wrapper::getSensorOffsets()
+{
+  adafruit_bno055_offsets_t offsets;
+  _bno->getSensorOffsets(offsets);
+  return offsets;
+}
+
 /**************************************************************************/
 /*
     Get the raw calibration offset and radius data [UNOPTIMIZED]

@@ -58,6 +58,8 @@ class IMU_Wrapper
 
         double getRoll() const;
 
+        adafruit_bno055_offsets_t getSensorOffsets();
+
         adafruit_bno055_offsets_t getOffsets();
 
     private:
