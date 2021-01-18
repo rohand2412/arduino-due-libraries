@@ -226,16 +226,16 @@ adafruit_bno055_offsets_t IMU_Wrapper::getOffsets()
 
     /* Optional: Display calibration status */
     displayCalStatus();
-    }
+  }
 
-    Serial.println("\nFully calibrated!");
+  Serial.println("\nFully calibrated!");
 
-    //Fetch results
-    adafruit_bno055_offsets_t newCalib;
-    _bno->getSensorOffsets(newCalib);
+  //Fetch results
+  adafruit_bno055_offsets_t newCalib;
+  _bno->getSensorOffsets(newCalib);
 
-    //Return offsets
-    return newCalib;
+  //Return offsets
+  return newCalib;
 }
 
 void IMU_Wrapper::_overflow(double& oldRaw, double& raw, double& axis)
