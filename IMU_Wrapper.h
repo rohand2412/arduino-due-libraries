@@ -27,6 +27,7 @@ class IMU_Wrapper
 
         const unsigned int _RST;
 
+        Adafruit_BNO055::adafruit_bno055_opmode_t _mode;
         adafruit_bno055_offsets_t _offsets;
         bool _haveOffsets = false;
 
@@ -41,7 +42,7 @@ class IMU_Wrapper
 
         void setExtCrystalUse(bool usextal);
 
-        void update();
+        void update(bool offsetRegen = true);
 
         void reset(double yaw = 0, double pitch = 0, double roll = 0);
 

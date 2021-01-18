@@ -14,6 +14,8 @@ void IMU_Wrapper::setOffsets(const adafruit_bno055_offsets_t &offsets)
 
 void IMU_Wrapper::begin(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode /*= Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF*/)
 {
+  _mode = mode;
+
   pinMode(_RST, OUTPUT);
   digitalWrite(_RST, HIGH);
 
@@ -41,7 +43,7 @@ void IMU_Wrapper::begin(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode /*
 
   while (!isFullyCalibrated())
   {
-    update();
+    update(false);
   }
 
   update();
@@ -49,6 +51,8 @@ void IMU_Wrapper::begin(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode /*
 
 void IMU_Wrapper::beginWithoutOffsets(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode /*= Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF*/)
 {
+  _mode = mode;
+
   pinMode(_RST, OUTPUT);
   digitalWrite(_RST, HIGH);
 
@@ -70,7 +74,7 @@ void IMU_Wrapper::setExtCrystalUse(bool usextal)
   _bno->setExtCrystalUse(usextal);
 }
 
-void IMU_Wrapper::update()
+void IMU_Wrapper::update(bool offsetRegen /*= true*/)
 {
   if (millis() - _lastUpdated_MS >= _BNO055_SAMPLERATE_DELAY_MS)
   {
@@ -82,13 +86,43 @@ void IMU_Wrapper::update()
     _magCal = 0;
     _bno->getCalibration(&_systemCal, &_gyroCal, &_accelCal, &_magCal);
 
-    _bno->getEvent(&_event);
-    double yawRaw = _event.orientation.x;
-    double pitchRaw = _event.orientation.y;
-    double rollRaw = _event.orientation.z;
-    _overflow(_oldYawRaw, yawRaw, _yaw);
-    _overflow(_oldPitchRaw, pitchRaw, _pitch);
-    _overflow(_oldRollRaw, rollRaw, _roll);
+    if (!isFullyCalibrated() && offsetRegen && _haveOffsets)
+    {
+      adafruit_bno055_offsets_t curOffsets = getSensorOffsets();
+      if (_gyroCal != 3)
+      {
+        curOffsets.gyro_offset_x = _offsets.gyro_offset_x;
+        curOffsets.gyro_offset_y = _offsets.gyro_offset_y;
+        curOffsets.gyro_offset_z = _offsets.gyro_offset_z;
+      }
+      if (_accelCal != 3)
+      {
+        curOffsets.accel_offset_x = _offsets.accel_offset_x;
+        curOffsets.accel_offset_y = _offsets.accel_offset_y;
+        curOffsets.accel_offset_z = _offsets.accel_offset_z;
+        curOffsets.accel_radius   = _offsets.accel_radius;
+      }
+      if (_magCal != 3)
+      {
+        curOffsets.mag_offset_x = _offsets.mag_offset_x;
+        curOffsets.mag_offset_y = _offsets.mag_offset_y;
+        curOffsets.mag_offset_z = _offsets.mag_offset_z;
+        curOffsets.mag_radius   = _offsets.mag_radius;
+      }
+      _bno->setMode(Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_CONFIG);
+      _bno->setSensorOffsets(curOffsets);
+      _bno->setMode(_mode);
+    }
+    else
+    {
+      _bno->getEvent(&_event);
+      double yawRaw = _event.orientation.x;
+      double pitchRaw = _event.orientation.y;
+      double rollRaw = _event.orientation.z;
+      _overflow(_oldYawRaw, yawRaw, _yaw);
+      _overflow(_oldPitchRaw, pitchRaw, _pitch);
+      _overflow(_oldRollRaw, rollRaw, _roll);
+    }
 
     _lastUpdated_MS = millis();
   }
