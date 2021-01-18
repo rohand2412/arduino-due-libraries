@@ -108,12 +108,10 @@ void IMU_Wrapper::update(bool offsetRegen /*= true*/)
         curOffsets.mag_offset_y = _offsets.mag_offset_y;
         curOffsets.mag_offset_z = _offsets.mag_offset_z;
         curOffsets.mag_radius   = _offsets.mag_radius;
-
-        _badMagCounter++;
       }
-      else
+      if (_magCal != 3 || _systemCal != 3)
       {
-        _badMagCounter = 0;
+        _badMagCounter++;
       }
 
       _bno->setMode(Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_CONFIG);
@@ -125,7 +123,9 @@ void IMU_Wrapper::update(bool offsetRegen /*= true*/)
       }
       _bno->setMode(_mode);
     }
-    else
+
+    if ((_systemCal == 3 && _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF)
+        || _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS)
     {
       _bno->getEvent(&_event);
       double yawRaw = _event.orientation.x;
@@ -253,6 +253,10 @@ void IMU_Wrapper::displayCalStatus()
   Serial.print(_accelCal, DEC);
   Serial.print(" M:");
   Serial.print(_magCal, DEC);
+  Serial.print(" BMG:");
+  Serial.print(_badMagCounter, DEC);
+  Serial.print(" M:");
+  Serial.print(_mode, HEX);
   Serial.print("\n");
 }
 
@@ -266,19 +270,34 @@ void IMU_Wrapper::displayOrientation()
   Serial.print(getRoll(), 4);
 }
 
-double IMU_Wrapper::getYaw() const
+double IMU_Wrapper::getYaw()
 {
-  return _yaw;
+  if ((_magCal == 3 && _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF)
+      || _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS)
+  {
+    _returnYaw = _yaw;
+  }
+  return _returnYaw;
 }
 
-double IMU_Wrapper::getPitch() const
+double IMU_Wrapper::getPitch()
 {
-  return _pitch;
+  if ((_magCal == 3 && _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF)
+      || _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS)
+  {
+    _returnPitch = _pitch;
+  }
+  return _returnPitch;
 }
 
-double IMU_Wrapper::getRoll() const
+double IMU_Wrapper::getRoll()
 {
-  return _roll;
+  if ((_magCal == 3 && _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF)
+      || _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS)
+  {
+    _returnRoll = _roll;
+  }
+  return _returnRoll;
 }
 
 adafruit_bno055_offsets_t IMU_Wrapper::getSensorOffsets()

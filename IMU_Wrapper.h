@@ -21,6 +21,9 @@ class IMU_Wrapper
         double _yaw = 0;
         double _pitch = 0;
         double _roll = 0;
+        double _returnYaw = 0;
+        double _returnPitch = 0;
+        double _returnRoll = 0;
 
         const unsigned int _BNO055_SAMPLERATE_DELAY_MS = 100;
         unsigned int _lastUpdated_MS;
@@ -63,11 +66,11 @@ class IMU_Wrapper
 
         void displayOrientation();
 
-        double getYaw() const;
+        double getYaw();
 
-        double getPitch() const;
+        double getPitch();
 
-        double getRoll() const;
+        double getRoll();
 
         adafruit_bno055_offsets_t getSensorOffsets();
 
