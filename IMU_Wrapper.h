@@ -31,6 +31,9 @@ class IMU_Wrapper
         adafruit_bno055_offsets_t _offsets;
         bool _haveOffsets = false;
 
+        unsigned int _badMagCounter = 0;
+        const unsigned int _BAD_MAG_MAX = 10;
+
     public:
         IMU_Wrapper(unsigned int RST, unsigned int sensorID = 55, uint8_t address = 0x28);
 

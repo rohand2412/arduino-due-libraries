@@ -108,9 +108,21 @@ void IMU_Wrapper::update(bool offsetRegen /*= true*/)
         curOffsets.mag_offset_y = _offsets.mag_offset_y;
         curOffsets.mag_offset_z = _offsets.mag_offset_z;
         curOffsets.mag_radius   = _offsets.mag_radius;
+
+        _badMagCounter++;
       }
+      else
+      {
+        _badMagCounter = 0;
+      }
+
       _bno->setMode(Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_CONFIG);
       _bno->setSensorOffsets(curOffsets);
+      
+      if (!(_badMagCounter < _BAD_MAG_MAX))
+      {
+        _mode = Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS;
+      }
       _bno->setMode(_mode);
     }
     else
@@ -331,5 +343,9 @@ void IMU_Wrapper::_overflow(double& oldRaw, double& raw, double& axis)
 
 bool IMU_Wrapper::isFullyCalibrated()
 {
+  if (_mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS)
+  {
+    return _gyroCal == 3 && _accelCal == 3;
+  }
   return _systemCal == 3 && _gyroCal == 3 && _accelCal == 3 && _magCal == 3;
 }
