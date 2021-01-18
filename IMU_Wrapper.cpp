@@ -99,6 +99,11 @@ void IMU_Wrapper::displayOffsets(const adafruit_bno055_offsets_t &calibData)
   Serial.print("\n");
 }
 
+void IMU_Wrapper::displayOffsets()
+{
+  displayOffsets(getOffsets());
+}
+
 /**************************************************************************/
 /*
     Displays some basic information on this sensor from the unified
