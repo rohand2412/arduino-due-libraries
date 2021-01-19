@@ -1,19 +1,19 @@
 #include <Arduino.h>
-#include "IMU_Wrapper.h"
+#include "IMU.h"
 
-IMU_Wrapper::IMU_Wrapper(unsigned int RST, unsigned int sensorID /*= 55*/, uint8_t address /*= 0x28*/) : _RST(RST)
+IMU::IMU(unsigned int RST, unsigned int sensorID /*= 55*/, uint8_t address /*= 0x28*/) : _RST(RST)
 {
     //Initialize Adafruit Sensor object
     _bno = new Adafruit_BNO055(sensorID, address);
 }
 
-IMU_Wrapper::~IMU_Wrapper()
+IMU::~IMU()
 {
     //Destroy Adafruit sensor object
     delete _bno;
 }
 
-void IMU_Wrapper::setOffsets(const adafruit_bno055_offsets_t &offsets)
+void IMU::setOffsets(const adafruit_bno055_offsets_t &offsets)
 {
     //Store offsets
     _offsets = offsets;
@@ -22,7 +22,7 @@ void IMU_Wrapper::setOffsets(const adafruit_bno055_offsets_t &offsets)
     _haveOffsets = true;
 }
 
-void IMU_Wrapper::begin(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode
+void IMU::begin(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode
                         /*= Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS*/)
 {
     //Store sensor mode
@@ -81,7 +81,7 @@ void IMU_Wrapper::begin(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode
     update();
 }
 
-void IMU_Wrapper::beginWithoutOffsets(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode
+void IMU::beginWithoutOffsets(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode
                                       /*= Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS*/)
 {
     //Store sensor mode
@@ -116,14 +116,14 @@ void IMU_Wrapper::beginWithoutOffsets(const Adafruit_BNO055::adafruit_bno055_opm
     update();
 }
 
-void IMU_Wrapper::setExtCrystalUse(bool usextal)
+void IMU::setExtCrystalUse(bool usextal)
 {
     //Set sensor usage of external crystal
     //as well as complete sensor configuration
     _bno->setExtCrystalUse(usextal);
 }
 
-void IMU_Wrapper::update(bool offsetRegen /*= true*/)
+void IMU::update(bool offsetRegen /*= true*/)
 {
     //Check if sampling rate delay has passed
     if (millis() - _lastUpdated_MS >= _BNO055_SAMPLERATE_DELAY_MS)
@@ -223,7 +223,7 @@ void IMU_Wrapper::update(bool offsetRegen /*= true*/)
     }
 }
 
-void IMU_Wrapper::reset(double yaw /*=0*/, double pitch /*=0*/, double roll /*=0*/)
+void IMU::reset(double yaw /*=0*/, double pitch /*=0*/, double roll /*=0*/)
 {
     //Software reset angle values
     _yaw = yaw;
@@ -231,7 +231,7 @@ void IMU_Wrapper::reset(double yaw /*=0*/, double pitch /*=0*/, double roll /*=0
     _roll = roll;
 }
 
-void IMU_Wrapper::resetSensor()
+void IMU::resetSensor()
 {
     //Set reset pin LOW
     digitalWrite(_RST, LOW);
@@ -247,7 +247,7 @@ void IMU_Wrapper::resetSensor()
     delay(800);
 }
 
-void IMU_Wrapper::displayOffsets(const adafruit_bno055_offsets_t &calibData)
+void IMU::displayOffsets(const adafruit_bno055_offsets_t &calibData)
 {
     //Display accel data
     Serial.print("Accelerometer: ");
@@ -288,13 +288,13 @@ void IMU_Wrapper::displayOffsets(const adafruit_bno055_offsets_t &calibData)
     Serial.print("\n");
 }
 
-void IMU_Wrapper::displayOffsets()
+void IMU::displayOffsets()
 {
     //Get offsets and then display them
     displayOffsets(getOffsets());
 }
 
-void IMU_Wrapper::displaySensorDetails()
+void IMU::displaySensorDetails()
 {
     //Effectively clear terminal
     Serial.println("------------------------------------");
@@ -321,7 +321,7 @@ void IMU_Wrapper::displaySensorDetails()
     Serial.println("");
 }
 
-void IMU_Wrapper::displaySensorStatus()
+void IMU::displaySensorStatus()
 {
     //Initialize status vars
     uint8_t system_status = 0;
@@ -342,7 +342,7 @@ void IMU_Wrapper::displaySensorStatus()
     Serial.println("");
 }
 
-void IMU_Wrapper::displayCalStatus()
+void IMU::displayCalStatus()
 {
     //Create space between other data being displayed
     Serial.print("\t");
@@ -377,7 +377,7 @@ void IMU_Wrapper::displayCalStatus()
     Serial.print("\n");
 }
 
-void IMU_Wrapper::displayOrientation()
+void IMU::displayOrientation()
 {
     //Display orientation data
     Serial.print("Yaw: ");
@@ -388,7 +388,7 @@ void IMU_Wrapper::displayOrientation()
     Serial.print(getRoll(), 4);
 }
 
-double IMU_Wrapper::getYaw()
+double IMU::getYaw()
 {
     //Check if mag is calibrated and mode is NDOF or just mode is IMUPLUS
     if ((_magCal == 3 && _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF)
@@ -402,7 +402,7 @@ double IMU_Wrapper::getYaw()
     return _returnYaw;
 }
 
-double IMU_Wrapper::getPitch()
+double IMU::getPitch()
 {
     //Check if mag is calibrated and mode is NDOF or just mode is IMUPLUS
     if ((_magCal == 3 && _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF)
@@ -416,7 +416,7 @@ double IMU_Wrapper::getPitch()
     return _returnPitch;
 }
 
-double IMU_Wrapper::getRoll()
+double IMU::getRoll()
 {
     //Check if mag is calibrated and mode is NDOF or just mode is IMUPLUS
     if ((_magCal == 3 && _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF)
@@ -430,7 +430,7 @@ double IMU_Wrapper::getRoll()
     return _returnRoll;
 }
 
-adafruit_bno055_offsets_t IMU_Wrapper::getSensorOffsets()
+adafruit_bno055_offsets_t IMU::getSensorOffsets()
 {
     //Initialize offsets var
     adafruit_bno055_offsets_t offsets;
@@ -442,7 +442,7 @@ adafruit_bno055_offsets_t IMU_Wrapper::getSensorOffsets()
     return offsets;
 }
 
-adafruit_bno055_offsets_t IMU_Wrapper::getOffsets()
+adafruit_bno055_offsets_t IMU::getOffsets()
 {
     //Clear current calibration data
     _systemCal = 0;
@@ -476,7 +476,7 @@ adafruit_bno055_offsets_t IMU_Wrapper::getOffsets()
     return newCalib;
 }
 
-void IMU_Wrapper::_overflow(double &oldRaw, double &raw, double &axis)
+void IMU::_overflow(double &oldRaw, double &raw, double &axis)
 {
     //Num of deg at which delta is considered overflow
     double threshold = 300;
@@ -504,7 +504,7 @@ void IMU_Wrapper::_overflow(double &oldRaw, double &raw, double &axis)
     oldRaw = raw;
 }
 
-bool IMU_Wrapper::isFullyCalibrated()
+bool IMU::isFullyCalibrated()
 {
     //Check if mode is IMUPLUS
     if (_mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS)

@@ -4,7 +4,7 @@
 #include <Adafruit_BNO055.h>
 #include <imumaths.h>
 
-class IMU_Wrapper
+class IMU
 {
     private:
         Adafruit_BNO055 *_bno;
@@ -38,9 +38,9 @@ class IMU_Wrapper
         const unsigned int _BAD_MAG_MAX = 10;
 
     public:
-        IMU_Wrapper(unsigned int RST, unsigned int sensorID = 55, uint8_t address = 0x28);
+        IMU(unsigned int RST, unsigned int sensorID = 55, uint8_t address = 0x28);
 
-        ~IMU_Wrapper();
+        ~IMU();
 
         void setOffsets(const adafruit_bno055_offsets_t &offsets);
 
