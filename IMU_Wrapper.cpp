@@ -12,7 +12,7 @@ void IMU_Wrapper::setOffsets(const adafruit_bno055_offsets_t &offsets)
   _haveOffsets = true;
 }
 
-void IMU_Wrapper::begin(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode /*= Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF*/)
+void IMU_Wrapper::begin(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode /*= Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS*/)
 {
   _mode = mode;
 
@@ -49,7 +49,7 @@ void IMU_Wrapper::begin(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode /*
   update();
 }
 
-void IMU_Wrapper::beginWithoutOffsets(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode /*= Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF*/)
+void IMU_Wrapper::beginWithoutOffsets(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode /*= Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS*/)
 {
   _mode = mode;
 
