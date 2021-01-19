@@ -78,6 +78,8 @@ class IMU
 
         adafruit_bno055_offsets_t getSensorOffsets();
 
+        adafruit_bno055_offsets_t generateOffsets();
+
         adafruit_bno055_offsets_t getOffsets();
 
         bool isFullyCalibrated();

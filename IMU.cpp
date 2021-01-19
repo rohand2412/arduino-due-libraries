@@ -442,7 +442,7 @@ adafruit_bno055_offsets_t IMU::getSensorOffsets()
     return offsets;
 }
 
-adafruit_bno055_offsets_t IMU::getOffsets()
+adafruit_bno055_offsets_t IMU::generateOffsets()
 {
     //Clear current calibration data
     _systemCal = 0;
@@ -474,6 +474,26 @@ adafruit_bno055_offsets_t IMU::getOffsets()
 
     //Return fully calibrated offsets
     return newCalib;
+}
+
+adafruit_bno055_offsets_t IMU::getOffsets()
+{
+    //Check if instance has offsets
+    if (_haveOffsets)
+    {
+        //Return offsets previously given
+        return _offsets;
+    }
+    //Instance does not have offsets
+    else
+    {
+        //Make sure user cannot miss message
+        while (true)
+        {
+            //Indication for user that offsets need to be given
+            Serial.println("[ERROR] NO OFFSETS WERE GIVEN FOR IMU");
+        }
+    }
 }
 
 void IMU::_overflow(double &oldRaw, double &raw, double &axis)
