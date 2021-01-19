@@ -6,6 +6,11 @@ IMU_Wrapper::IMU_Wrapper(unsigned int RST, unsigned int sensorID /*= 55*/, uint8
   _bno = new Adafruit_BNO055(sensorID, address);
 }
 
+IMU_Wrapper::~IMU_Wrapper()
+{
+  delete _bno;
+}
+
 void IMU_Wrapper::setOffsets(const adafruit_bno055_offsets_t &offsets)
 {
   _offsets = offsets;
