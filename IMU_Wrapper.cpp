@@ -3,154 +3,229 @@
 
 IMU_Wrapper::IMU_Wrapper(unsigned int RST, unsigned int sensorID /*= 55*/, uint8_t address /*= 0x28*/) : _RST(RST)
 {
+    //Initialize Adafruit Sensor object
     _bno = new Adafruit_BNO055(sensorID, address);
 }
 
 IMU_Wrapper::~IMU_Wrapper()
 {
+    //Destroy Adafruit sensor object
     delete _bno;
 }
 
 void IMU_Wrapper::setOffsets(const adafruit_bno055_offsets_t &offsets)
 {
+    //Store offsets
     _offsets = offsets;
+
+    //Indicate that offsets have been given
     _haveOffsets = true;
 }
 
 void IMU_Wrapper::begin(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode
                         /*= Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS*/)
 {
+    //Store sensor mode
     _mode = mode;
 
+    //Configure reset pin
     pinMode(_RST, OUTPUT);
+
+    //Initialize to HIGH state
     digitalWrite(_RST, HIGH);
 
+    //Check if connection was successful
+    //as well as establish connection
     if (!_bno->begin(mode))
     {
+        //Indicate to user that connection was unsuccessful
         Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
         while (1)
             ;
     }
 
+    //Check if offsets have been given
     if (_haveOffsets)
     {
+        //Set offsets to sensor
         _bno->setSensorOffsets(_offsets);
     }
+    //Offsets have not been given
     else
     {
+        //Make sure user cannot miss message
         while (true)
         {
+            //Indication for user that offsets need to be given
             Serial.println("[ERROR] NO OFFSETS WERE GIVEN FOR IMU");
         }
     }
 
+    // *Pause* (possibly reduce in future)
     delay(1000);
 
+    //Tell sensor to use external sensor
+    //and complete configuration
+    //(so only call after config is complete)
     _bno->setExtCrystalUse(true);
 
+    //Wait for offsets to take full effect
     while (!isFullyCalibrated())
     {
+        //Keep updating sensor data
         update(false);
     }
 
+    //Final update of sensor data before
+    //initialization is declared complete
     update();
 }
 
 void IMU_Wrapper::beginWithoutOffsets(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode
                                       /*= Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS*/)
 {
+    //Store sensor mode
     _mode = mode;
 
+    //Configure reset pin
     pinMode(_RST, OUTPUT);
+
+    //Initialize to HIGH state
     digitalWrite(_RST, HIGH);
 
+    //Check if connection was successful
+    //as well as establish connection
     if (!_bno->begin(mode))
     {
+        //Indicate to user that connection was unsuccessful
         Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
         while (1)
             ;
     }
 
+    // *Pause* (possibly reduce in future)
     delay(1000);
 
+    //Tell sensor to use external sensor
+    //and complete configuration
+    //(so only call after config is complete)
     _bno->setExtCrystalUse(true);
 
+    //Final update of sensor data before
+    //initialization is declared complete
     update();
 }
 
 void IMU_Wrapper::setExtCrystalUse(bool usextal)
 {
+    //Set sensor usage of external crystal
+    //as well as complete sensor configuration
     _bno->setExtCrystalUse(usextal);
 }
 
 void IMU_Wrapper::update(bool offsetRegen /*= true*/)
 {
+    //Check if sampling rate delay has passed
     if (millis() - _lastUpdated_MS >= _BNO055_SAMPLERATE_DELAY_MS)
     {
+        //Poll sensor for new sensor info
         _bno->getSensor(&_sensor);
 
+        //Reset calibration data
         _systemCal = 0;
         _gyroCal = 0;
         _accelCal = 0;
         _magCal = 0;
+
+        //Poll sensor for new calibration data
         _bno->getCalibration(&_systemCal, &_gyroCal, &_accelCal, &_magCal);
 
+        //Check if calibration is inaccurate
+        //and if user has allowed regen of offsets
+        //and if instance has offsets to regen with
         if (!isFullyCalibrated() && offsetRegen && _haveOffsets)
         {
+            //Get latest offsets from sensor
             adafruit_bno055_offsets_t curOffsets = getSensorOffsets();
+
+            //Check if gyro is not calibrated
             if (_gyroCal != 3)
             {
+                //Repair gyro offsets
                 curOffsets.gyro_offset_x = _offsets.gyro_offset_x;
                 curOffsets.gyro_offset_y = _offsets.gyro_offset_y;
                 curOffsets.gyro_offset_z = _offsets.gyro_offset_z;
             }
+            //Check if accel is not calibrated
             if (_accelCal != 3)
             {
+                //Repair accel offsets
                 curOffsets.accel_offset_x = _offsets.accel_offset_x;
                 curOffsets.accel_offset_y = _offsets.accel_offset_y;
                 curOffsets.accel_offset_z = _offsets.accel_offset_z;
                 curOffsets.accel_radius = _offsets.accel_radius;
             }
+            //Check if mag is not calibrated
             if (_magCal != 3)
             {
+                //Repair mag offsets
                 curOffsets.mag_offset_x = _offsets.mag_offset_x;
                 curOffsets.mag_offset_y = _offsets.mag_offset_y;
                 curOffsets.mag_offset_z = _offsets.mag_offset_z;
                 curOffsets.mag_radius = _offsets.mag_radius;
             }
+
+            //Check if mag or system is not calibrated
             if (_magCal != 3 || _systemCal != 3)
             {
+                //Monitor number of times mag fails
                 _badMagCounter++;
             }
 
+            //Set operation mode to configuration for setting offsets
             _bno->setMode(Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_CONFIG);
+
+            //Set repaired offsets
             _bno->setSensorOffsets(curOffsets);
 
+            //If mag has gone bad more than or equal to preset limit
             if (!(_badMagCounter < _BAD_MAG_MAX))
             {
+                //Ditch mag and change mode to just accel and gyro
                 _mode = Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS;
             }
+
+            //Set new or old mode back from config
             _bno->setMode(_mode);
         }
 
+        //Check if system is calibrated and if mode is NDOF or just if mode is IMUPLUS
         if ((_systemCal == 3 && _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF)
             || _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS)
         {
+            //Get new event
             _bno->getEvent(&_event);
+
+            //Store orientation data
             double yawRaw = _event.orientation.x;
             double pitchRaw = _event.orientation.y;
             double rollRaw = _event.orientation.z;
+
+            //Account for axis wrap around/overflow
+            //and update instance data
             _overflow(_oldYawRaw, yawRaw, _yaw);
             _overflow(_oldPitchRaw, pitchRaw, _pitch);
             _overflow(_oldRollRaw, rollRaw, _roll);
         }
 
+        //Store when update was last called
         _lastUpdated_MS = millis();
     }
 }
 
 void IMU_Wrapper::reset(double yaw /*=0*/, double pitch /*=0*/, double roll /*=0*/)
 {
+    //Software reset angle values
     _yaw = yaw;
     _pitch = pitch;
     _roll = roll;
@@ -158,19 +233,23 @@ void IMU_Wrapper::reset(double yaw /*=0*/, double pitch /*=0*/, double roll /*=0
 
 void IMU_Wrapper::resetSensor()
 {
+    //Set reset pin LOW
     digitalWrite(_RST, LOW);
+
+    //Wait for sensor to acknowledge
+    //that reset is being initiated
     delay(1);
+
+    //Put reset pin back to HIGH
     digitalWrite(_RST, HIGH);
+
+    //Wait for sensor to fire back up
     delay(800);
 }
 
-/**************************************************************************/
-/*
-    Display the raw calibration offset and radius data
-    */
-/**************************************************************************/
 void IMU_Wrapper::displayOffsets(const adafruit_bno055_offsets_t &calibData)
 {
+    //Display accel data
     Serial.print("Accelerometer: ");
     Serial.print(calibData.accel_offset_x);
     Serial.print(" ");
@@ -179,6 +258,7 @@ void IMU_Wrapper::displayOffsets(const adafruit_bno055_offsets_t &calibData)
     Serial.print(calibData.accel_offset_z);
     Serial.print(" ");
 
+    //Display gyro data
     Serial.print("\nGyro: ");
     Serial.print(calibData.gyro_offset_x);
     Serial.print(" ");
@@ -187,6 +267,7 @@ void IMU_Wrapper::displayOffsets(const adafruit_bno055_offsets_t &calibData)
     Serial.print(calibData.gyro_offset_z);
     Serial.print(" ");
 
+    //Display mag data
     Serial.print("\nMag: ");
     Serial.print(calibData.mag_offset_x);
     Serial.print(" ");
@@ -195,29 +276,30 @@ void IMU_Wrapper::displayOffsets(const adafruit_bno055_offsets_t &calibData)
     Serial.print(calibData.mag_offset_z);
     Serial.print(" ");
 
+    //Display accel radius
     Serial.print("\nAccel Radius: ");
     Serial.print(calibData.accel_radius);
 
+    //Display mag radius
     Serial.print("\nMag Radius: ");
     Serial.print(calibData.mag_radius);
 
+    //New line
     Serial.print("\n");
 }
 
 void IMU_Wrapper::displayOffsets()
 {
+    //Get offsets and then display them
     displayOffsets(getOffsets());
 }
 
-/**************************************************************************/
-/*
-    Displays some basic information on this sensor from the unified
-    sensor API sensor_t type (see Adafruit_Sensor for more information)
-*/
-/**************************************************************************/
 void IMU_Wrapper::displaySensorDetails()
 {
+    //Effectively clear terminal
     Serial.println("------------------------------------");
+
+    //Display sensor hardware details
     Serial.print("Sensor:       ");
     Serial.println(_sensor.name);
     Serial.print("Driver Ver:   ");
@@ -233,22 +315,23 @@ void IMU_Wrapper::displaySensorDetails()
     Serial.print("Resolution:   ");
     Serial.print(_sensor.resolution);
     Serial.println(" xxx");
+
+    //Clear terminal again
     Serial.println("------------------------------------");
     Serial.println("");
 }
 
-/**************************************************************************/
-/*
-    Display some basic info about the sensor status
-*/
-/**************************************************************************/
 void IMU_Wrapper::displaySensorStatus()
 {
+    //Initialize status vars
     uint8_t system_status = 0;
     uint8_t self_test_results = 0;
     uint8_t system_error = 0;
+
+    //Poll sensor for status data
     _bno->getSystemStatus(&system_status, &self_test_results, &system_error);
 
+    //Display newly acquired data
     Serial.println("");
     Serial.print("System Status: 0x");
     Serial.println(system_status, HEX);
@@ -259,19 +342,20 @@ void IMU_Wrapper::displaySensorStatus()
     Serial.println("");
 }
 
-/**************************************************************************/
-/*
-    Display sensor calibration status
-*/
-/**************************************************************************/
 void IMU_Wrapper::displayCalStatus()
 {
+    //Create space between other data being displayed
     Serial.print("\t");
+
+    //Check if system calibration is 0
     if (!_systemCal)
     {
+        //Indicate to user that sensor is 
+        //recommended not use in when not calibrated
         Serial.print("! ");
     }
 
+    //Display remaining calibration data
     Serial.print("Sys:");
     Serial.print(_systemCal, DEC);
     Serial.print(" G:");
@@ -280,15 +364,22 @@ void IMU_Wrapper::displayCalStatus()
     Serial.print(_accelCal, DEC);
     Serial.print(" M:");
     Serial.print(_magCal, DEC);
+
+    //Display number of times mag has failed so far
     Serial.print(" BMG:");
     Serial.print(_badMagCounter, DEC);
+
+    //Display current mode sensor is in
     Serial.print(" M:");
     Serial.print(_mode, HEX);
+
+    //New line
     Serial.print("\n");
 }
 
 void IMU_Wrapper::displayOrientation()
 {
+    //Display orientation data
     Serial.print("Yaw: ");
     Serial.print(getYaw(), 4);
     Serial.print("\tPitch: ");
@@ -299,99 +390,132 @@ void IMU_Wrapper::displayOrientation()
 
 double IMU_Wrapper::getYaw()
 {
+    //Check if mag is calibrated and mode is NDOF or just mode is IMUPLUS
     if ((_magCal == 3 && _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF)
         || _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS)
     {
+        //Only return latest data if true
         _returnYaw = _yaw;
     }
+
+    //Return yaw
     return _returnYaw;
 }
 
 double IMU_Wrapper::getPitch()
 {
+    //Check if mag is calibrated and mode is NDOF or just mode is IMUPLUS
     if ((_magCal == 3 && _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF)
         || _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS)
     {
+        //Only return latest data if true
         _returnPitch = _pitch;
     }
+
+    //Return pitch
     return _returnPitch;
 }
 
 double IMU_Wrapper::getRoll()
 {
+    //Check if mag is calibrated and mode is NDOF or just mode is IMUPLUS
     if ((_magCal == 3 && _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_NDOF)
         || _mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS)
     {
+        //Only return latest data if true
         _returnRoll = _roll;
     }
+
+    //Return roll
     return _returnRoll;
 }
 
 adafruit_bno055_offsets_t IMU_Wrapper::getSensorOffsets()
 {
+    //Initialize offsets var
     adafruit_bno055_offsets_t offsets;
+
+    //Poll sensor for latest offsets
     _bno->getSensorOffsets(offsets);
+
+    //Return latest offsets
     return offsets;
 }
 
-/**************************************************************************/
-/*
-    Get the raw calibration offset and radius data [UNOPTIMIZED]
-    */
-/**************************************************************************/
 adafruit_bno055_offsets_t IMU_Wrapper::getOffsets()
 {
+    //Clear current calibration data
     _systemCal = 0;
     _gyroCal = 0;
     _accelCal = 0;
     _magCal = 0;
 
+    //Repeat until sensor is fully calibrated
     while (!isFullyCalibrated())
     {
-        /* Poll sensor for new data */
+        //Poll sensor for new data
         update();
 
-        /* Optional: Display orientation data */
+        //Display orientation data
         displayOrientation();
 
-        /* Wait the specified delay before requesting new data */
+        // Wait the specified delay before requesting new data
         delay(_BNO055_SAMPLERATE_DELAY_MS);
 
-        /* Optional: Display calibration status */
+        //Display calibration status
         displayCalStatus();
     }
 
+    //Indicate to user that calibration is complete
     Serial.println("\nFully calibrated!");
 
-    //Fetch results
+    //Initialize offset var
     adafruit_bno055_offsets_t newCalib;
+
+    //Fetch fully calibrated results
     _bno->getSensorOffsets(newCalib);
 
-    //Return offsets
+    //Return fully calibrated offsets
     return newCalib;
 }
 
 void IMU_Wrapper::_overflow(double &oldRaw, double &raw, double &axis)
 {
-    double threshold = 300;     //Num of deg at which event is considered overflow
-    double fullCircleDeg = 360; //Num of deg in a circle
+    //Num of deg at which delta is considered overflow
+    double threshold = 300;
+
+    //Num of deg in a circle
+    double fullCircleDeg = 360;
+
+    //Check if delta raw readings is greater than threshold
     if (raw - oldRaw > threshold)
     {
+        //Detect and revert overflow
         axis -= fullCircleDeg;
     }
+    //Check if delta raw readings is less than negative threshold
     else if (raw - oldRaw < -threshold)
     {
+        //Detect and revert overflow
         axis += fullCircleDeg;
     }
+
+    //Add delta to current software sensor data
     axis += raw - oldRaw;
+
+    //Save reading as old reading
     oldRaw = raw;
 }
 
 bool IMU_Wrapper::isFullyCalibrated()
 {
+    //Check if mode is IMUPLUS
     if (_mode == Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS)
     {
+        //Only gyro and accel used in IMUPLUS
         return _gyroCal == 3 && _accelCal == 3;
     }
+
+    //NDOF mode uses all sensors
     return _systemCal == 3 && _gyroCal == 3 && _accelCal == 3 && _magCal == 3;
 }
