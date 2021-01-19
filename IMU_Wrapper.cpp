@@ -459,9 +459,6 @@ adafruit_bno055_offsets_t IMU_Wrapper::getOffsets()
         //Display orientation data
         displayOrientation();
 
-        // Wait the specified delay before requesting new data
-        delay(_BNO055_SAMPLERATE_DELAY_MS);
-
         //Display calibration status
         displayCalStatus();
     }
