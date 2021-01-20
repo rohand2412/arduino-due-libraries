@@ -86,6 +86,8 @@ class IMU
 
         bool isFullyCalibrated();
 
+        bool haveOffsets();
+
     private:
         void _overflow(double& oldRaw, double& raw, double& axis);
 };

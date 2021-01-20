@@ -542,3 +542,9 @@ bool IMU::isFullyCalibrated()
     //NDOF mode uses all sensors
     return _systemCal == 3 && _gyroCal == 3 && _accelCal == 3 && _magCal == 3;
 }
+
+bool IMU::haveOffsets()
+{
+    //Return whether instance has offsets or not
+    return _haveOffsets;
+}
