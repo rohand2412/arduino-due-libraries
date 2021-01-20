@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "IMU.h"
 
-IMU::IMU(unsigned int RST, unsigned int sensorID /*= 55*/, uint8_t address /*= 0x28*/) : _RST(RST), _sensorID(sensorID)
+IMU::IMU(unsigned int RST, unsigned int sensorID /*= 55*/, uint8_t address /*= 0x28*/) : _RST(RST), _sensorID(sensorID), _address(address)
 {
     //Initialize Adafruit Sensor object
     _bno = new Adafruit_BNO055(sensorID, address);
@@ -497,6 +497,12 @@ unsigned int IMU::getSensorID()
 {
     //Return sensor ID
     return _sensorID;
+}
+
+unsigned int IMU::getAddress()
+{
+    //Return I2C address of the sensor
+    return _address;
 }
 
 void IMU::_overflow(double &oldRaw, double &raw, double &axis)
