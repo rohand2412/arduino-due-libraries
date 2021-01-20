@@ -61,9 +61,6 @@ void IMU::begin(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode
         }
     }
 
-    // *Pause* (possibly reduce in future)
-    delay(1000);
-
     //Tell sensor to use external sensor
     //and complete configuration
     //(so only call after config is complete)
@@ -102,9 +99,6 @@ void IMU::beginWithoutOffsets(const Adafruit_BNO055::adafruit_bno055_opmode_t &m
         while (1)
             ;
     }
-
-    // *Pause* (possibly reduce in future)
-    delay(1000);
 
     //Tell sensor to use external sensor
     //and complete configuration
@@ -242,9 +236,6 @@ void IMU::resetSensor()
 
     //Put reset pin back to HIGH
     digitalWrite(_RST, HIGH);
-
-    //Wait for sensor to fire back up
-    delay(800);
 }
 
 void IMU::displayOffsets(const adafruit_bno055_offsets_t &calibData)
