@@ -31,8 +31,8 @@ void IMU::begin(const Adafruit_BNO055::adafruit_bno055_opmode_t &mode
     //Configure reset pin
     pinMode(_RST, OUTPUT);
 
-    //Initialize to HIGH state
-    digitalWrite(_RST, HIGH);
+    //Reset sensor just in case
+    resetSensor();
 
     //Check if connection was successful
     //as well as establish connection
@@ -90,8 +90,8 @@ void IMU::beginWithoutOffsets(const Adafruit_BNO055::adafruit_bno055_opmode_t &m
     //Configure reset pin
     pinMode(_RST, OUTPUT);
 
-    //Initialize to HIGH state
-    digitalWrite(_RST, HIGH);
+    //Reset sensor just in case
+    resetSensor();
 
     //Check if connection was successful
     //as well as establish connection
