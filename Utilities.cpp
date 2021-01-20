@@ -74,44 +74,46 @@ unsigned int Utilities::average(unsigned int* buffer, size_t endLen, size_t star
     return sum / (endLen - startLen);
 }
 
-size_t Utilities::find(unsigned int& newPins, size_t newPinLen, unsigned int *oldPins, size_t oldSensorNum)
+size_t Utilities::find(unsigned int &newNums, size_t newNumLen,
+                       unsigned int *oldNums, size_t oldNumLen)
 {
-    //Convert first pin to pin pair array
-    unsigned int *newPinsPtr = &newPins;
+    //Convert first num to num array
+    unsigned int *newNumsPtr = &newNums;
 
-    //Maps local pin indices to global pin indices
-    size_t pinIndices[newPinLen];
+    //Maps new num indices to old num indices
+    size_t numIndices[newNumLen];
 
-    //Iterate through pins
-    for (size_t pin = 0; pin < newPinLen; pin++)
+    //Iterate through nums
+    for (size_t num = 0; num < newNumLen; num++)
     {
-        //Populate _pinIndices
-        pinIndices[pin] = _find(newPinsPtr[pin], oldPins, oldSensorNum * PINS_PER_SENSOR);
+        //Populate numIndices
+        numIndices[num] = find(newNumsPtr[num], oldNums, oldNumLen);
 
-        //Check if any of the pins weren't found
-        if (pinIndices[pin] == 0xFFFFFFFF) //== -1
+        //Check if any of the nums weren't found
+        if (numIndices[num] == 0xFFFFFFFF) //== -1
         {
             //Return -1 if no match found
             return 0xFFFFFFFF;
         }
     }
 
-    //Pin Index is arbitrary
+    //Num Index is arbitrary
     //Int truncation will make result equivalent
-    //to global sensor index of the pins
-    return pinIndices[0] / newPinLen;
+    //to old num group index
+    return numIndices[0] / newNumLen;
 }
 
-size_t Utilities::find(size_t newPinIndex, size_t *oldPinIndices, size_t oldPinIndicesNum)
+size_t Utilities::find(unsigned int newNum,
+                       unsigned int *oldNums, size_t oldNumLen)
 {
-    //Iterate through old pin indices
-    for (size_t oldPinIndex = 0; oldPinIndex < oldPinIndicesNum; oldPinIndex++)
+    //Iterate through old nums
+    for (size_t oldNum = 0; oldNum < oldNumLen; oldNum++)
     {
-        //Check if pin index matches old pin iteration
-        if (oldPinIndices[oldPinIndex] == newPinIndex)
+        //Check if new num matches old num iteration
+        if (oldNums[oldNum] == newNum)
         {
             //Return running iterator if match found
-            return oldPinIndex;
+            return oldNum;
         }
     }
 
