@@ -74,6 +74,51 @@ unsigned int Utilities::average(unsigned int* buffer, size_t endLen, size_t star
     return sum / (endLen - startLen);
 }
 
+size_t Utilities::find(unsigned int& newPins, size_t newPinLen, unsigned int *oldPins, size_t oldSensorNum)
+{
+    //Convert first pin to pin pair array
+    unsigned int *newPinsPtr = &newPins;
+
+    //Maps local pin indices to global pin indices
+    size_t pinIndices[newPinLen];
+
+    //Iterate through pins
+    for (size_t pin = 0; pin < newPinLen; pin++)
+    {
+        //Populate _pinIndices
+        pinIndices[pin] = _find(newPinsPtr[pin], oldPins, oldSensorNum * PINS_PER_SENSOR);
+
+        //Check if any of the pins weren't found
+        if (pinIndices[pin] == 0xFFFFFFFF) //== -1
+        {
+            //Return -1 if no match found
+            return 0xFFFFFFFF;
+        }
+    }
+
+    //Pin Index is arbitrary
+    //Int truncation will make result equivalent
+    //to global sensor index of the pins
+    return pinIndices[0] / newPinLen;
+}
+
+size_t Utilities::find(size_t newPinIndex, size_t *oldPinIndices, size_t oldPinIndicesNum)
+{
+    //Iterate through old pin indices
+    for (size_t oldPinIndex = 0; oldPinIndex < oldPinIndicesNum; oldPinIndex++)
+    {
+        //Check if pin index matches old pin iteration
+        if (oldPinIndices[oldPinIndex] == newPinIndex)
+        {
+            //Return running iterator if match found
+            return oldPinIndex;
+        }
+    }
+
+    //Return -1 if no match found
+    return 0xFFFFFFFF;
+}
+
 AverageSign::AverageSign(size_t len)
 {
     //Store num of items

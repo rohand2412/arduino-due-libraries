@@ -13,6 +13,12 @@ class Utilities
 
         static unsigned int average(unsigned int* buffer, size_t endLen, size_t startLen = 0);
 
+        static size_t find(unsigned int &newPins, size_t newPinLen,
+                           unsigned int *oldPins, size_t oldSensorNum);
+
+        static size_t find(size_t newPinIndex, size_t *oldPinIndices,
+                           size_t oldPinIndicesNum);
+
     private:
         Utilities();
 };
