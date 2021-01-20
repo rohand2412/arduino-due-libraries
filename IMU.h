@@ -29,6 +29,7 @@ class IMU
         unsigned int _lastUpdated_MS;
 
         const unsigned int _RST;
+        const unsigned int _sensorID;
 
         Adafruit_BNO055::adafruit_bno055_opmode_t _mode;
         adafruit_bno055_offsets_t _offsets;
@@ -83,6 +84,8 @@ class IMU
         adafruit_bno055_offsets_t getOffsets();
 
         unsigned int getRST();
+
+        unsigned int getSensorID();
 
         bool isFullyCalibrated();
 

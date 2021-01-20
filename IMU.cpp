@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "IMU.h"
 
-IMU::IMU(unsigned int RST, unsigned int sensorID /*= 55*/, uint8_t address /*= 0x28*/) : _RST(RST)
+IMU::IMU(unsigned int RST, unsigned int sensorID /*= 55*/, uint8_t address /*= 0x28*/) : _RST(RST), _sensorID(sensorID)
 {
     //Initialize Adafruit Sensor object
     _bno = new Adafruit_BNO055(sensorID, address);
@@ -491,6 +491,12 @@ unsigned int IMU::getRST()
 {
     //Return reset pin
     return _RST;
+}
+
+unsigned int IMU::getSensorID()
+{
+    //Return sensor ID
+    return _sensorID;
 }
 
 void IMU::_overflow(double &oldRaw, double &raw, double &axis)
