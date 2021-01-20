@@ -496,6 +496,12 @@ adafruit_bno055_offsets_t IMU::getOffsets()
     }
 }
 
+unsigned int IMU::getRST()
+{
+    //Return reset pin
+    return _RST;
+}
+
 void IMU::_overflow(double &oldRaw, double &raw, double &axis)
 {
     //Num of deg at which delta is considered overflow

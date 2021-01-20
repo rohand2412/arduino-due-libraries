@@ -82,6 +82,8 @@ class IMU
 
         adafruit_bno055_offsets_t getOffsets();
 
+        unsigned int getRST();
+
         bool isFullyCalibrated();
 
     private:
