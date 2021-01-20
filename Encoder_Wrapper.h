@@ -47,12 +47,6 @@ class Encoder_Wrapper
         static size_t getTotalSensorNum();
 
     private:
-        static size_t _find(unsigned int& newPins, size_t newPinLen,
-                            unsigned int *oldPins, size_t oldSensorNum);
-
-        static size_t _find(size_t newPinIndex, size_t *oldPinIndices,
-                            size_t oldPinIndicesNum);
-
         static void _construct(unsigned int *pins, size_t newSensorNum,
                                size_t oldSensorNum);
 

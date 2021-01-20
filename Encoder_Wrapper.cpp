@@ -48,7 +48,7 @@ void Encoder_Wrapper::begin(unsigned int* pins, size_t sensorNum /*= 1*/)
         for (size_t sensor = 0; sensor < _sensorNum; sensor++)
         {
             //Check if pin pair is repeated
-            if (_find(pins[sensor * PINS_PER_SENSOR], PINS_PER_SENSOR, _pins, _totalSensorNum) != 0xFFFFFFFF)   //!= -1
+            if (Utilities::find(pins[sensor * PINS_PER_SENSOR], PINS_PER_SENSOR, _pins, _totalSensorNum * PINS_PER_SENSOR) != 0xFFFFFFFF)   //!= -1
             {
                 //Store which index is repeated
                 skipIndices[skipIndicesNum] = sensor;
@@ -88,7 +88,7 @@ void Encoder_Wrapper::begin(unsigned int* pins, size_t sensorNum /*= 1*/)
         for (size_t sensor = oldSensorNum; sensor < newSensorNum; sensor++)
         {
             //Increase until index is not one to skip
-            while (_find(pinsIndex, skipIndices, skipIndicesNum) != 0xFFFFFFFF) //!= -1
+            while (Utilities::find(pinsIndex, skipIndices, skipIndicesNum) != 0xFFFFFFFF) //!= -1
             {
                 //Move to next pin pair
                 pinsIndex++;
@@ -114,10 +114,10 @@ void Encoder_Wrapper::begin(unsigned int* pins, size_t sensorNum /*= 1*/)
     _pinIndices = new size_t[_sensorNum * PINS_PER_SENSOR];
     for (size_t sensor = 0; sensor < _sensorNum; sensor++)
     {
-        _indices[sensor] = _find(pins[sensor * PINS_PER_SENSOR], PINS_PER_SENSOR, _pins, _totalSensorNum);
+        _indices[sensor] = Utilities::find(pins[sensor * PINS_PER_SENSOR], PINS_PER_SENSOR, _pins, _totalSensorNum * PINS_PER_SENSOR);
         for (size_t pinIndex = 0; pinIndex < PINS_PER_SENSOR; pinIndex++)
         {
-            _pinIndices[sensor * PINS_PER_SENSOR + pinIndex] = _find(pins[sensor * PINS_PER_SENSOR + pinIndex], _pins, _totalSensorNum * PINS_PER_SENSOR);
+            _pinIndices[sensor * PINS_PER_SENSOR + pinIndex] = Utilities::find(pins[sensor * PINS_PER_SENSOR + pinIndex], _pins, _totalSensorNum * PINS_PER_SENSOR);
         }
     }
 }
@@ -210,51 +210,6 @@ size_t Encoder_Wrapper::getTotalSensorNum()
 {
     //Return class wide number of encoders
     return _totalSensorNum;
-}
-
-size_t Encoder_Wrapper::_find(unsigned int& newPins, size_t newPinLen, unsigned int *oldPins, size_t oldSensorNum)
-{
-    //Convert first pin to pin pair array
-    unsigned int *newPinsPtr = &newPins;
-
-    //Maps local pin indices to global pin indices
-    size_t pinIndices[newPinLen];
-
-    //Iterate through pins
-    for (size_t pin = 0; pin < newPinLen; pin++)
-    {
-        //Populate _pinIndices
-        pinIndices[pin] = _find(newPinsPtr[pin], oldPins, oldSensorNum * PINS_PER_SENSOR);
-
-        //Check if any of the pins weren't found
-        if (pinIndices[pin] == 0xFFFFFFFF) //== -1
-        {
-            //Return -1 if no match found
-            return 0xFFFFFFFF;
-        }
-    }
-
-    //Pin Index is arbitrary
-    //Int truncation will make result equivalent
-    //to global sensor index of the pins
-    return pinIndices[0] / newPinLen;
-}
-
-size_t Encoder_Wrapper::_find(size_t newPinIndex, size_t *oldPinIndices, size_t oldPinIndicesNum)
-{
-    //Iterate through old pin indices
-    for (size_t oldPinIndex = 0; oldPinIndex < oldPinIndicesNum; oldPinIndex++)
-    {
-        //Check if pin index matches old pin iteration
-        if (oldPinIndices[oldPinIndex] == newPinIndex)
-        {
-            //Return running iterator if match found
-            return oldPinIndex;
-        }
-    }
-
-    //Return -1 if no match found
-    return 0xFFFFFFFF;
 }
 
 void Encoder_Wrapper::_construct(unsigned int *pins, size_t newSensorNum, size_t oldSensorNum)
