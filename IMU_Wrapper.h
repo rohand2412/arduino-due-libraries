@@ -5,11 +5,19 @@
 class IMU_Wrapper
 {
     private:
+        static size_t _instanceNum;
         static size_t _sensorNum;
 
         static IMU **_imusPtr;
+        static unsigned int *_sensorIDs;
+        static bool *_haveBegun;
+        static bool *_haveSetCrystal;
 
         static const unsigned int _AXIS_NUM = 3;
+        static const size_t _YAW_INDEX = 0;
+        static const size_t _PITCH_INDEX = 1;
+        static const size_t _ROLL_INDEX = 2;
+        double _setAngles[_AXIS_NUM];
         double _resetAngles[_AXIS_NUM];
 
         size_t _index;
@@ -60,6 +68,8 @@ class IMU_Wrapper
         adafruit_bno055_offsets_t getOffsets();
 
         unsigned int getRST();
+
+        unsigned int getSensorID();
 
         bool isFullyCalibrated();
 
