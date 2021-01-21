@@ -236,6 +236,9 @@ void IMU::resetSensor()
 
     //Put reset pin back to HIGH
     digitalWrite(_RST, HIGH);
+
+    //Wait for sensor to fire back up
+    delay(800);
 }
 
 void IMU::displayOffsets(const adafruit_bno055_offsets_t &calibData)
