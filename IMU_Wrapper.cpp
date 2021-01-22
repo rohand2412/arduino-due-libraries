@@ -189,7 +189,14 @@ void IMU_Wrapper::displayOffsets(const adafruit_bno055_offsets_t &calibData)
 
 void IMU_Wrapper::displayOffsets()
 {
-    _imusPtr[_index]->displayOffsets();
+    if (_imusPtr[_index]->haveOffsets())
+    {
+        displayOffsets(_imusPtr[_index]->getOffsets());
+    }
+    else
+    {
+        _imusPtr[_index]->displayOffsets();
+    }
 }
 
 void IMU_Wrapper::displaySensorDetails()
