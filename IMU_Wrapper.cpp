@@ -14,25 +14,62 @@ bool *IMU_Wrapper::_haveBegun;
 
 bool *IMU_Wrapper::_haveSetCrystal;
 
+bool IMU_Wrapper::_createdSensor = false;
+
 IMU_Wrapper::IMU_Wrapper(unsigned int RST, unsigned int sensorID /*= 55*/, uint8_t address /*= 0x28*/)
 {
     _instanceNum++;
 
+    createSensor(RST, sensorID, address);
+}
+
+IMU_Wrapper::IMU_Wrapper()
+{
+    _instanceNum++;
+}
+
+IMU_Wrapper::~IMU_Wrapper()
+{
     if (_instanceNum == 1)
     {
-        _sensorNum++;
-
-        _imusPtr = new IMU *[_sensorNum];
-        _sensorIDs = new unsigned int[_sensorNum];
-        _haveBegun = new bool[_sensorNum];
-        _haveSetCrystal = new bool[_sensorNum];
-
         for (size_t sensor = 0; sensor < _sensorNum; sensor++)
         {
-            _imusPtr[sensor] = new IMU(RST, sensorID, address);
-            _sensorIDs[sensor] = sensorID;
-            _haveBegun[sensor] = false;
-            _haveSetCrystal[sensor] = false;
+            delete _imusPtr[sensor];
+        }
+        _sensorNum = 0;
+        _createdSensor = false;
+
+        delete[] _imusPtr;
+        delete[] _sensorIDs;
+        delete[] _haveBegun;
+        delete[] _haveSetCrystal;
+    }
+
+    _instanceNum--;
+}
+
+void IMU_Wrapper::createSensor(unsigned int RST, unsigned int sensorID /*= 55*/, uint8_t address /*= 0x28*/)
+{
+    if (_instanceNum == 1)
+    {
+        if (!_createdSensor)
+        {
+            _sensorNum++;
+
+            _imusPtr = new IMU *[_sensorNum];
+            _sensorIDs = new unsigned int[_sensorNum];
+            _haveBegun = new bool[_sensorNum];
+            _haveSetCrystal = new bool[_sensorNum];
+
+            for (size_t sensor = 0; sensor < _sensorNum; sensor++)
+            {
+                _imusPtr[sensor] = new IMU(RST, sensorID, address);
+                _sensorIDs[sensor] = sensorID;
+                _haveBegun[sensor] = false;
+                _haveSetCrystal[sensor] = false;
+            }
+
+            _createdSensor = true;
         }
     }
     else if (Utilities::find(sensorID, _sensorIDs, _sensorNum) == 0xFFFFFFFF) //== -1
@@ -78,25 +115,6 @@ IMU_Wrapper::IMU_Wrapper(unsigned int RST, unsigned int sensorID /*= 55*/, uint8
     }
 
     _index = Utilities::find(sensorID, _sensorIDs, _sensorNum);
-}
-
-IMU_Wrapper::~IMU_Wrapper()
-{
-    if (_instanceNum == 1)
-    {
-        for (size_t sensor = 0; sensor < _sensorNum; sensor++)
-        {
-            delete _imusPtr[sensor];
-        }
-        _sensorNum = 0;
-
-        delete[] _imusPtr;
-        delete[] _sensorIDs;
-        delete[] _haveBegun;
-        delete[] _haveSetCrystal;
-    }
-
-    _instanceNum--;
 }
 
 void IMU_Wrapper::setOffsets(const adafruit_bno055_offsets_t &offsets)

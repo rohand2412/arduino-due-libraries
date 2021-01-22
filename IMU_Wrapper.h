@@ -12,6 +12,7 @@ class IMU_Wrapper
         static unsigned int *_sensorIDs;
         static bool *_haveBegun;
         static bool *_haveSetCrystal;
+        static bool _createdSensor;
 
         static const unsigned int _AXIS_NUM = 3;
         static const size_t _YAW_INDEX = 0;
@@ -25,7 +26,11 @@ class IMU_Wrapper
     public:
         IMU_Wrapper(unsigned int RST, unsigned int sensorID = 55, uint8_t address = 0x28);
 
+        IMU_Wrapper();
+
         ~IMU_Wrapper();
+
+        void createSensor(unsigned int RST, unsigned int sensorID = 55, uint8_t address = 0x28);
 
         void setOffsets(const adafruit_bno055_offsets_t &offsets);
 
