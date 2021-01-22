@@ -258,6 +258,11 @@ unsigned int IMU_Wrapper::getSensorID()
     return _sensorIDs[_index];
 }
 
+size_t IMU_Wrapper::getTotalSensorNum()
+{
+    return _sensorNum;
+}
+
 bool IMU_Wrapper::isFullyCalibrated()
 {
     return _imusPtr[_index]->isFullyCalibrated();

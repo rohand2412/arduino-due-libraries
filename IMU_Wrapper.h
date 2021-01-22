@@ -76,6 +76,8 @@ class IMU_Wrapper
 
         unsigned int getSensorID();
 
+        static size_t getTotalSensorNum();
+
         bool isFullyCalibrated();
 
         bool haveOffsets();
