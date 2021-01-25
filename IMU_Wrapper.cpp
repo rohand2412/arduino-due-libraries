@@ -9,7 +9,7 @@ size_t IMU_Wrapper::_sensorNum = 0;
 
 IMU **IMU_Wrapper::_imusPtr;
 
-unsigned int *IMU_Wrapper::_sensorIDs;
+unsigned int *IMU_Wrapper::_sensorAddrs;
 
 bool *IMU_Wrapper::_haveBegun;
 
@@ -52,7 +52,7 @@ IMU_Wrapper::~IMU_Wrapper()
 
         //Delete allocated static variables
         delete[] _imusPtr;
-        delete[] _sensorIDs;
+        delete[] _sensorAddrs;
         delete[] _haveBegun;
         delete[] _haveSetCrystal;
     }
@@ -75,7 +75,7 @@ void IMU_Wrapper::createSensor(unsigned int RST, unsigned int sensorID /*= 55*/,
 
             //Allocate memory
             _imusPtr = new IMU *[_sensorNum];
-            _sensorIDs = new unsigned int[_sensorNum];
+            _sensorAddrs = new unsigned int[_sensorNum];
             _haveBegun = new bool[_sensorNum];
             _haveSetCrystal = new bool[_sensorNum];
 
@@ -84,7 +84,7 @@ void IMU_Wrapper::createSensor(unsigned int RST, unsigned int sensorID /*= 55*/,
             {
                 //Populate memory
                 _imusPtr[sensor] = new IMU(RST, sensorID, address);
-                _sensorIDs[sensor] = sensorID;
+                _sensorAddrs[sensor] = address;
                 _haveBegun[sensor] = false;
                 _haveSetCrystal[sensor] = false;
             }
@@ -94,12 +94,12 @@ void IMU_Wrapper::createSensor(unsigned int RST, unsigned int sensorID /*= 55*/,
         }
     }
     //Check if desired sensor is not already created
-    else if (Utilities::find(sensorID, _sensorIDs, _sensorNum) == 0xFFFFFFFF) //== -1
+    else if (Utilities::find(address, _sensorAddrs, _sensorNum) == 0xFFFFFFFF) //== -1
     {
         //Save old data
         size_t oldSensorNum = _sensorNum;
         IMU **imusPtr = _imusPtr;
-        unsigned int *sensorIDs = _sensorIDs;
+        unsigned int *sensorAddrs = _sensorAddrs;
         bool *haveBegun = _haveBegun;
         bool *haveSetCrystal = _haveSetCrystal;
 
@@ -108,7 +108,7 @@ void IMU_Wrapper::createSensor(unsigned int RST, unsigned int sensorID /*= 55*/,
 
         //Allocate new memory
         _imusPtr = new IMU *[_sensorNum];
-        _sensorIDs = new unsigned int[_sensorNum];
+        _sensorAddrs = new unsigned int[_sensorNum];
         _haveBegun = new bool[_sensorNum];
         _haveSetCrystal = new bool[_sensorNum];
 
@@ -117,7 +117,7 @@ void IMU_Wrapper::createSensor(unsigned int RST, unsigned int sensorID /*= 55*/,
         {
             //Populate new memory with old data
             _imusPtr[oldSensor] = imusPtr[oldSensor];
-            _sensorIDs[oldSensor] = sensorIDs[oldSensor];
+            _sensorAddrs[oldSensor] = sensorAddrs[oldSensor];
             _haveBegun[oldSensor] = haveBegun[oldSensor];
             _haveSetCrystal[oldSensor] = haveSetCrystal[oldSensor];
         }
@@ -127,14 +127,14 @@ void IMU_Wrapper::createSensor(unsigned int RST, unsigned int sensorID /*= 55*/,
         {
             //Populate new memory with new data
             _imusPtr[newSensor] = new IMU(RST, sensorID, address);
-            _sensorIDs[newSensor] = sensorID;
+            _sensorAddrs[newSensor] = address;
             _haveBegun[newSensor] = false;
             _haveSetCrystal[newSensor] = false;
         }
 
         //Delete old saved data
         delete[] imusPtr;
-        delete[] sensorIDs;
+        delete[] sensorAddrs;
         delete[] haveBegun;
         delete[] haveSetCrystal;
     }
@@ -147,7 +147,7 @@ void IMU_Wrapper::createSensor(unsigned int RST, unsigned int sensorID /*= 55*/,
     }
 
     //Initialize index translator
-    _index = Utilities::find(sensorID, _sensorIDs, _sensorNum);
+    _index = Utilities::find(address, _sensorAddrs, _sensorNum);
 }
 
 void IMU_Wrapper::setOffsets(const adafruit_bno055_offsets_t &offsets)
@@ -336,10 +336,10 @@ unsigned int IMU_Wrapper::getRST()
     return _imusPtr[_index]->getRST();
 }
 
-unsigned int IMU_Wrapper::getSensorID()
+unsigned int IMU_Wrapper::getSensorAddr()
 {
-    //Return sensorID
-    return _sensorIDs[_index];
+    //Return sensor address
+    return _sensorAddrs[_index];
 }
 
 size_t IMU_Wrapper::getTotalSensorNum()

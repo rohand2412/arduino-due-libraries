@@ -9,7 +9,7 @@ class IMU_Wrapper
         static size_t _sensorNum;
 
         static IMU **_imusPtr;
-        static unsigned int *_sensorIDs;
+        static unsigned int *_sensorAddrs;
         static bool *_haveBegun;
         static bool *_haveSetCrystal;
         static bool _createdSensor;
@@ -74,7 +74,7 @@ class IMU_Wrapper
 
         unsigned int getRST();
 
-        unsigned int getSensorID();
+        unsigned int getSensorAddr();
 
         static size_t getTotalSensorNum();
 
