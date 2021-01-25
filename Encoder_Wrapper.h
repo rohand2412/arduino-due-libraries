@@ -11,6 +11,7 @@ class Encoder_Wrapper
         size_t _sensorNum = -1;
         static Encoder **_encodersPtr;
         static unsigned int *_pins;
+        static bool _createdSensor;
 
         long int *_resetCounts;
         long int *_setCounts;

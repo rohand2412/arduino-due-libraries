@@ -11,6 +11,8 @@ Encoder **Encoder_Wrapper::_encodersPtr;
 
 unsigned int *Encoder_Wrapper::_pins;
 
+bool Encoder_Wrapper::_createdSensor = false;
+
 Encoder_Wrapper::Encoder_Wrapper(){};
 
 Encoder_Wrapper::Encoder_Wrapper(unsigned int* pins, size_t sensorNum /*= 1*/)
@@ -60,11 +62,16 @@ void Encoder_Wrapper::begin(unsigned int* pins, size_t sensorNum /*= 1*/)
 
     if (_instanceNum == 1)
     {
-        //Initialize _totalSensorNum
-        _totalSensorNum = _sensorNum;
+        if (!_createdSensor)
+        {
+            //Initialize _totalSensorNum
+            _totalSensorNum = _sensorNum;
 
-        //Construct static data structures
-        _construct(pins, _totalSensorNum);
+            //Construct static data structures
+            _construct(pins, _totalSensorNum);
+
+            _createdSensor = true;
+        }
     }
     //Check for new sensors that need to be added
     else if (skipIndicesNum < _sensorNum) 
@@ -133,6 +140,9 @@ Encoder_Wrapper::~Encoder_Wrapper()
             //Destroy each individual sensor
             delete _encodersPtr[sensor];
         }
+
+        //Indicate that sensor has been destroyed
+        _createdSensor = false;
 
         //Destroy encapsulating arrays
         delete[] _encodersPtr;
