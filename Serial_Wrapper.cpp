@@ -25,7 +25,6 @@ void Serial_Wrapper::begin(uint32_t baudRate, UARTClass& port)
 
     while (!port)
         ;
-    delay(300);
 }
 
 void Serial_Wrapper::setDefault(const UARTClass& port)
