@@ -15,7 +15,7 @@ class Serial_Wrapper
 
         static void send(const uint8_t* buffer, size_t bufferLen, UARTClass& port = _port);
 
-        static size_t receive(uint8_t buffer, size_t bufferLen, UARTClass& port = _port);
+        static size_t receive(uint8_t* buffer, size_t bufferLen, UARTClass& port = _port);
     
     private:
         Serial_Wrapper();

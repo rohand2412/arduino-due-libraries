@@ -31,3 +31,23 @@ void Serial_Wrapper::setDefault(const UARTClass& port)
 {
     _port = port;
 }
+
+void Serial_Wrapper::send(const uint8_t* buffer, size_t bufferLen, UARTClass& port /*= _port*/)
+{
+    for (size_t item = 0; item < bufferLen; item++)
+    {
+        port.write(buffer[item]);
+    }
+}
+
+size_t Serial_Wrapper::receive(uint8_t* buffer, size_t bufferLen, UARTClass& port /*= _port*/)
+{
+    size_t itemNum = 0;
+    while (port.available())
+    {
+        buffer[itemNum] = port.read();
+        itemNum++;
+    }
+
+    return itemNum;
+}
