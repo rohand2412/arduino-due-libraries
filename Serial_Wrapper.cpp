@@ -12,6 +12,8 @@ const uint8_t Serial_Wrapper::_CRC_CALCULATOR[0x20] =
      5, 0, 3, 4, 7, 2, 1, 3, 0, 5,
      6};
 
+Serial_Wrapper::_State Serial_Wrapper::_state = Serial_Wrapper::_State::INIT;
+
 Serial_Wrapper::Serial_Wrapper(){};
 
 void Serial_Wrapper::begin(uint32_t baudRate, UARTClass& port)
@@ -43,36 +45,46 @@ void Serial_Wrapper::setDefault(const UARTClass& port)
 
 void Serial_Wrapper::send(const uint8_t* buffer, size_t bufferLen, UARTClass& port /*= _port*/)
 {
-    port.write(_DELIMITER_BYTE);
+    port.write(_doCRC(_DELIMITER_BYTE));
     for (size_t item = 0; item < bufferLen; item++)
     {
         if (buffer[item] == _DELIMITER_BYTE || buffer[item] == _ESCAPE_BYTE)
         {
-            port.write(_ESCAPE_BYTE);
-            port.write(_escape(buffer[item]));
+            port.write(_doCRC(_ESCAPE_BYTE));
+            port.write(_doCRC(_escape(buffer[item])));
         }
         else
         {
-            port.write(buffer[item]);
+            port.write(_doCRC(buffer[item]));
         }
     }
-    port.write(_DELIMITER_BYTE);
+    port.write(_doCRC(_DELIMITER_BYTE));
 }
 
 size_t Serial_Wrapper::receive(uint8_t* buffer, size_t bufferLen, UARTClass& port /*= _port*/)
 {
+    uint8_t message;
     while (port.available())
     {
-        if (_receiveSM(buffer, &_itemNum, bufferLen, port.read()))
+        message = _undoCRC(port.read());
+        if (message != 0xFF) //!= -1
         {
-            if (_itemNum == 0)
+            if (_receiveSM(buffer, &_itemNum, bufferLen, message))
             {
-                continue;
-            }
+                if (_itemNum == 0)
+                {
+                    continue;
+                }
 
-            size_t itemNum = _itemNum;
+                size_t itemNum = _itemNum;
+                _itemNum = 0;
+                return itemNum;
+            }
+        }
+        else
+        {
+            _state = _State::INIT;
             _itemNum = 0;
-            return itemNum;
         }
     }
 
@@ -81,13 +93,12 @@ size_t Serial_Wrapper::receive(uint8_t* buffer, size_t bufferLen, UARTClass& por
 
 bool Serial_Wrapper::_receiveSM(uint8_t *buffer, size_t *itemNum, size_t bufferLen, uint8_t byte_in)
 {
-    static _State state = _State::INIT;
-    switch (state)
+    switch (_state)
     {
         case _State::INIT:
             if (byte_in == _DELIMITER_BYTE)
             {
-                state = _State::NORMAL;
+                _state = _State::NORMAL;
             }
             return false;
 
@@ -98,7 +109,7 @@ bool Serial_Wrapper::_receiveSM(uint8_t *buffer, size_t *itemNum, size_t bufferL
             }
             if (byte_in == _ESCAPE_BYTE)
             {
-                state = _State::ESCAPE;
+                _state = _State::ESCAPE;
                 return false;
             }
             buffer[(*itemNum)++] = byte_in;
@@ -106,7 +117,7 @@ bool Serial_Wrapper::_receiveSM(uint8_t *buffer, size_t *itemNum, size_t bufferL
         
         case _State::ESCAPE:
             buffer[(*itemNum)++] = _unescape(byte_in);
-            state = _State::NORMAL;
+            _state = _State::NORMAL;
             return false;
     }
 }
@@ -127,6 +138,12 @@ uint8_t Serial_Wrapper::_undoCRC(uint8_t crc_byte)
     }
     else
     {
+        if (!Serial)
+        {
+            begin(115200, Serial);
+        }
+        Serial.println("[WARNING] CORRUPT BYTE DETECTED");
+
         return 0xFF; //return -1
     }
 }

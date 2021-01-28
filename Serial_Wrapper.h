@@ -6,9 +6,9 @@ class Serial_Wrapper
     private:
         static const uint8_t _CRC_CALCULATOR[0x20];
 
-        static constexpr uint8_t _DELIMITER_BYTE = 0xff;
-        static constexpr uint8_t _ESCAPE_BYTE = 0xfe;
-        static constexpr uint8_t _CONVERSION = 0x80;
+        static constexpr uint8_t _DELIMITER_BYTE = 0x1f;
+        static constexpr uint8_t _ESCAPE_BYTE = 0x1e;
+        static constexpr uint8_t _CONVERSION = 0x10;
 
         static UARTClass _port;
 
@@ -18,6 +18,7 @@ class Serial_Wrapper
             NORMAL,
             ESCAPE
         };
+        static _State _state;
 
         static size_t _itemNum;
 
