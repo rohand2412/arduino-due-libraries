@@ -5,6 +5,13 @@ UARTClass Serial_Wrapper::_port = Serial;
 
 size_t Serial_Wrapper::_itemNum = 0;
 
+const uint8_t Serial_Wrapper::_CRC_CALCULATOR[0x20] =
+    {0,
+     3, 6, 5, 7, 4, 1, 2, 5, 6, 3,
+     0, 2, 1, 4, 7, 1, 2, 7, 4, 6,
+     5, 0, 3, 4, 7, 2, 1, 3, 0, 5,
+     6};
+
 Serial_Wrapper::Serial_Wrapper(){};
 
 void Serial_Wrapper::begin(uint32_t baudRate, UARTClass& port)
@@ -101,6 +108,26 @@ bool Serial_Wrapper::_receiveSM(uint8_t *buffer, size_t *itemNum, size_t bufferL
             buffer[(*itemNum)++] = _unescape(byte_in);
             state = _State::NORMAL;
             return false;
+    }
+}
+
+uint8_t Serial_Wrapper::_doCRC(uint8_t message)
+{
+    return message * 8 + _CRC_CALCULATOR[message];
+}
+
+uint8_t Serial_Wrapper::_undoCRC(uint8_t crc_byte)
+{
+    const uint8_t message = (crc_byte & 0xf8) / 8;
+    const uint8_t crc = crc_byte & 0x07;
+
+    if (_CRC_CALCULATOR[message] == crc)
+    {
+        return message;
+    }
+    else
+    {
+        return 0xFF; //return -1
     }
 }
 

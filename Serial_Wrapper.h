@@ -35,9 +35,9 @@ class Serial_Wrapper
 
         static bool _receiveSM(uint8_t *buffer, size_t *i, size_t bufferLen, uint8_t byte_in);
 
-        static uint8_t _doCRC(uint8_t byte_in);
+        static uint8_t _doCRC(uint8_t message);
 
-        static uint8_t _undoCRC(uint8_t byte_in);
+        static uint8_t _undoCRC(uint8_t crc_byte);
 
         static uint8_t _escape(uint8_t raw);
 
