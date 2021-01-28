@@ -48,14 +48,28 @@ void Serial_Wrapper::send(const uint8_t* buffer, size_t bufferLen, UARTClass& po
     port.write(_doCRC(_DELIMITER_BYTE));
     for (size_t item = 0; item < bufferLen; item++)
     {
-        if (buffer[item] == _DELIMITER_BYTE || buffer[item] == _ESCAPE_BYTE)
+        if (buffer[item] > 0x1f)
         {
-            port.write(_doCRC(_ESCAPE_BYTE));
-            port.write(_doCRC(_escape(buffer[item])));
+            if (!Serial)
+            {
+                begin(115200, Serial);
+            }
+            while (true)
+            {
+                Serial.println("[ERROR] TRYING TO SEND BYTE BIGGER THAN 0x1f");
+            }
         }
         else
         {
-            port.write(_doCRC(buffer[item]));
+            if (buffer[item] == _DELIMITER_BYTE || buffer[item] == _ESCAPE_BYTE)
+            {
+                port.write(_doCRC(_ESCAPE_BYTE));
+                port.write(_doCRC(_escape(buffer[item])));
+            }
+            else
+            {
+                port.write(_doCRC(buffer[item]));
+            }
         }
     }
     port.write(_doCRC(_DELIMITER_BYTE));
