@@ -11,8 +11,8 @@ class Servo_Wrapper : public Servo
         unsigned int _angle;    //in degrees
     
     public:
-        static const unsigned int SERVO_S1 = 9; //Servo pin for s1 servo
-        static const unsigned int SERVO_S2 = 10; //Servo pin for s2 servo
+        static const unsigned int SERVO_S1 = 10; //Servo pin for s1 servo
+        static const unsigned int SERVO_S2 = 9; //Servo pin for s2 servo
 
     public:
         Servo_Wrapper(unsigned int lowerBound = 0, unsigned int upperBound = 180);
