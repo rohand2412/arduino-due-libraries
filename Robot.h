@@ -11,28 +11,33 @@ class Robot
     private:
         Motor_Wrapper *_motors;
 
-        Servo_Wrapper _armServo(35, 135);
-        Servo_Wrapper _camServo(47, 137);
+        Servo_Wrapper _armServo;
+        Servo_Wrapper _camServo;
 
+        const uint8_t _GROUND_ANGLE = 5;
+        const uint8_t _HOLD_ANGLE = 85;
+        const uint8_t _DROP_ANGLE = 140;
         const uint8_t _EVAC_ANGLE = 15;
-        const Uint8_t _LINE_ANGLE = 35;
+        const uint8_t _LINE_ANGLE = 35;
 
-        IMU_Wrapper _imu(43);
+        IMU_Wrapper _imu;
 
         Ultrasonic_Wrapper *_ultrasonics;
     
     public:
         Robot();
 
-        void begin();
+        void begin(void (*ultrasonicISRs[])());
 
         void update();
 
-        void run();
+        void run(double leftSpeed, double rightSpeed);
 
         void turn();
 
-        void pickUpBall();
+        void captureBall();
+
+        void holdBalls();
 
         void dropBalls();
 
@@ -40,13 +45,15 @@ class Robot
 
         void setLine();
 
-        const Motor_Wrapper *getMotors() const;
+        bool nearObstacle();
 
-        const Servo_Wrapper *getArmServo() const;
+        Motor_Wrapper &getMotors();
 
-        const Servo_Wrapper *getCamServo() const;
+        Servo_Wrapper &getArmServo();
 
-        const IMU_Wrapper *getIMU() const;
+        Servo_Wrapper &getCamServo();
 
-        const Ultrasonic_Wrapper *getUltrasonics() const;
-}
+        IMU_Wrapper &getIMU();
+
+        Ultrasonic_Wrapper &getUltrasonics();
+};
