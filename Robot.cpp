@@ -43,12 +43,49 @@ void Robot::update()
     _imu.update();
 
     _ultrasonics->update();
+
+    if (isTurning())
+    {
+        if (fabs(_imu.getYaw() - _startYaw) >= fabs(_turnAngle))
+        {
+            _motors->stop();
+            _isTurning = false;
+        }
+    }
 }
 
 void Robot::run(double leftSpeed, double rightSpeed)
 {
     _motors->run(leftSpeed, Motor_Wrapper::MOTOR_LEFT);
     _motors->run(rightSpeed, Motor_Wrapper::MOTOR_RIGHT);
+
+    _isTurning = false;
+}
+
+void Robot::turn(double angle)
+{
+    if (!Utilities::isEqual_DBL(angle, 0))
+    {
+        if (!isTurning())
+        {
+            _turnAngle = angle;
+            _startYaw = _imu.getYaw();
+            if (angle > 0)
+            {
+                run(0.5, -0.5);
+            }
+            else if (angle < 0)
+            {
+                run(-0.5, 0.5);
+            }
+            _isTurning = true;
+        }
+    }
+}
+
+bool Robot::isTurning()
+{
+    return _isTurning;
 }
 
 void Robot::captureBall()

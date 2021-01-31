@@ -5,6 +5,7 @@
 #include "Servo_Wrapper.h"
 #include "IMU_Wrapper.h"
 #include "Ultrasonic_Wrapper.h"
+#include "Utilities.h"
 
 class Robot
 {
@@ -23,7 +24,11 @@ class Robot
         IMU_Wrapper _imu;
 
         Ultrasonic_Wrapper *_ultrasonics;
-    
+
+        bool _isTurning = false;
+        double _startYaw = 0;
+        double _turnAngle = 0;
+
     public:
         Robot();
 
@@ -33,7 +38,9 @@ class Robot
 
         void run(double leftSpeed, double rightSpeed);
 
-        void turn();
+        void turn(double angle);
+
+        bool isTurning();
 
         void captureBall();
 
