@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "Robot.h"
 
-Robot::Robot() : _armServo(35, 140), _camServo(47, 137), _imu(43)
+Robot::Robot() : _armServo(35, 140), _camServo(47, 137), _imu(43), _led(39), _rgb(36, 35, 37)
 {
     //Initialize motors on heap
     const size_t motorNum = 2;
@@ -40,6 +40,12 @@ void Robot::begin(void (*ultrasonicISRs[])())
 
     //Configre ultrasonics
     _ultrasonics->begin(ultrasonicISRs);
+
+    //Configure led
+    _led.begin();
+
+    //Configure rgb led
+    _rgb.begin();
 }
 
 void Robot::update()
@@ -187,4 +193,16 @@ Ultrasonic_Wrapper &Robot::getUltrasonics()
 {
     //Return reference to ultrasonics
     return *_ultrasonics;
+}
+
+LED &Robot::getLED()
+{
+    //Return reference to led
+    return _led;
+}
+
+RGB_LED &Robot::getRGB_LED()
+{
+    //Return reference to rgb led
+    return _rgb;
 }

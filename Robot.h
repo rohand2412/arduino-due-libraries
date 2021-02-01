@@ -5,6 +5,7 @@
 #include "Servo_Wrapper.h"
 #include "IMU_Wrapper.h"
 #include "Ultrasonic_Wrapper.h"
+#include "LightPeripherals.h"
 #include "Utilities.h"
 
 class Robot
@@ -24,6 +25,10 @@ class Robot
         IMU_Wrapper _imu;
 
         Ultrasonic_Wrapper *_ultrasonics;
+
+        LED _led;
+
+        RGB_LED _rgb;
 
         bool _isTurning = false;
         double _startYaw = 0;
@@ -63,4 +68,8 @@ class Robot
         IMU_Wrapper &getIMU();
 
         Ultrasonic_Wrapper &getUltrasonics();
+
+        LED &getLED();
+
+        RGB_LED &getRGB_LED();
 };
