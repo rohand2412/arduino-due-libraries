@@ -94,7 +94,7 @@ Motor_Wrapper::~Motor_Wrapper()
 void Motor_Wrapper::setEncoders(unsigned int* pins)
 {
     //Initialize encoders
-    _encoders.begin(pins, _motorNum);
+    _encoders.createSensor(pins, _motorNum);
 }
 
 void Motor_Wrapper::setPid(double proportionalCoefficient,
