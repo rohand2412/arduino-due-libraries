@@ -5,7 +5,7 @@
 Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
                              size_t motorNum,
                              unsigned int INTERVAL_MS /*= 20*/,
-                             long int COUNTS_PER_REVOLUTION /*= 4560*/)
+                             long int COUNTS_PER_REVOLUTION /*= 4460*/)
                              : _motorNum(motorNum),
                              //One more for dif PID
                              _pidNum(_motorNum + 1),
@@ -64,7 +64,7 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
 Motor_Wrapper::Motor_Wrapper(unsigned int port,
                              size_t motorNum /*= 1*/,
                              unsigned int INTERVAL_MS /*= 20*/,
-                             long int COUNTS_PER_REVOLUTION /*= 4560*/)
+                             long int COUNTS_PER_REVOLUTION /*= 4460*/)
                              //Reuse alternate constructor
                              : Motor_Wrapper(&port,
                                              motorNum,
@@ -405,6 +405,11 @@ long int Motor_Wrapper::getCount(size_t motor /*= MOTOR_LEFT*/)
 {
     //Return encoder counts with correct sign
     return _encoders.getCount(motor) * _speedMultipliers[motor];
+}
+
+long int Motor_Wrapper::getCountsPerRev() const
+{
+    return _COUNTS_PER_REVOLUTION;
 }
 
 unsigned int Motor_Wrapper::getEncoderPin(size_t sensor /*= Encoder_Wrapper::ENCODER_LEFT*/,

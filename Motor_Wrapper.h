@@ -124,6 +124,8 @@ class Motor_Wrapper
 
         long int getCount(size_t motor = MOTOR_LEFT);
 
+        long int getCountsPerRev() const;
+
         unsigned int getEncoderPin(size_t sensor = Encoder_Wrapper::ENCODER_LEFT,
                                    size_t index = Encoder_Wrapper::ENCODER_OUT_A) const;
     
