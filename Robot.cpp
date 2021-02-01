@@ -8,6 +8,12 @@ Robot::Robot() : _armServo(35, 140), _camServo(47, 137), _imu(43), _led(39), _rg
     unsigned int motorPorts[motorNum] = {Motor_Wrapper::SHIELD_M1, Motor_Wrapper::SHIELD_M3};
     _motors = new Motor_Wrapper(motorPorts, motorNum);
 
+    //Initialize encoders on stack
+    const size_t encoderNum = 2;
+    unsigned int encoderPins[encoderNum * Encoder_Wrapper::PINS_PER_SENSOR]
+        = {46, 44, 50, 48};
+    _encoders.createSensor(encoderPins, encoderNum);
+
     //Initialize ultrasonics on heap
     const size_t ultrasonicsNum = 4;
     unsigned int echoPins[ultrasonicsNum] = {53, 51, 49, 47};
@@ -169,6 +175,12 @@ Motor_Wrapper &Robot::getMotors()
 {
     //Return reference to motors
     return *_motors;
+}
+
+Encoder_Wrapper &Robot::getEncoders()
+{
+    //Return reference to encoders
+    return _encoders;
 }
 
 Servo_Wrapper &Robot::getArmServo()

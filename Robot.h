@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include "Serial_Wrapper.h"
 #include "Motor_Wrapper.h"
+#include "Encoder_Wrapper.h"
 #include "Servo_Wrapper.h"
 #include "IMU_Wrapper.h"
 #include "Ultrasonic_Wrapper.h"
@@ -12,6 +13,8 @@ class Robot
 {
     private:
         Motor_Wrapper *_motors;
+
+        Encoder_Wrapper _encoders;
 
         Servo_Wrapper _armServo;
         Servo_Wrapper _camServo;
@@ -60,6 +63,8 @@ class Robot
         bool nearObstacle();
 
         Motor_Wrapper &getMotors();
+
+        Encoder_Wrapper &getEncoders();
 
         Servo_Wrapper &getArmServo();
 
