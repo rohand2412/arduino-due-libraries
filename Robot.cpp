@@ -76,6 +76,21 @@ void Robot::update()
             _isTurning = false;
         }
     }
+    if (isDrivingDistance())
+    {
+        long int leftCounts = _encoders.getCount(Encoder_Wrapper::ENCODER_LEFT)
+                              * _motors->getSpeedMultiplier(Motor_Wrapper::MOTOR_LEFT);
+        long int rightCounts = _encoders.getCount(Encoder_Wrapper::ENCODER_RIGHT)
+                               * _motors->getSpeedMultiplier(Motor_Wrapper::MOTOR_RIGHT);
+        long int averageCounts = (leftCounts + rightCounts) / 2;
+
+        if (abs(averageCounts) >= abs(_distanceCounts))
+        {
+            _motors->stop();
+
+            _isDrivingDistance = false;
+        }
+    }
 }
 
 void Robot::run(double leftSpeed, double rightSpeed)
@@ -86,6 +101,30 @@ void Robot::run(double leftSpeed, double rightSpeed)
 
     //Indicate terminated turn in case robot was mid-turn
     _isTurning = false;
+
+    _isDrivingDistance = false;
+}
+
+void Robot::runDistance_CM(double speed, int distance)
+{
+    if (distance)
+    {
+        if (!isDrivingDistance())
+        {
+            _distanceCounts = round(distance * _motors->getCountsPerRev() / _TIRE_CIRCUMFRENCE);
+
+            _encoders.resetCount();
+
+            run(speed, speed);
+
+            _isDrivingDistance = true;
+        }
+    }
+}
+
+bool Robot::isDrivingDistance()
+{
+    return _isDrivingDistance;
 }
 
 void Robot::turn(double angle)

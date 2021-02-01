@@ -37,6 +37,10 @@ class Robot
         double _startYaw = 0;
         double _turnAngle = 0;
 
+        const double _TIRE_CIRCUMFRENCE = 3.9 * PI;
+        bool _isDrivingDistance = false;
+        int _distanceCounts = 0;
+
     public:
         Robot();
 
@@ -45,6 +49,10 @@ class Robot
         void update();
 
         void run(double leftSpeed, double rightSpeed);
+
+        void runDistance_CM(double speed, int distance);
+
+        bool isDrivingDistance();
 
         void turn(double angle);
 
