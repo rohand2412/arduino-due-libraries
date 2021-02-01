@@ -33,7 +33,7 @@ class Encoder_Wrapper
 
         ~Encoder_Wrapper();
 
-        void begin(unsigned int *pins, size_t sensorNum = 1);
+        void createSensor(unsigned int *pins, size_t sensorNum = 1);
 
         void setCount(size_t sensor, long int newCount); //No default param in order to preserve order of params
 
