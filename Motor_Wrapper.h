@@ -59,11 +59,11 @@ class Motor_Wrapper
     public:
         Motor_Wrapper(unsigned int* ports, size_t motorNum,
                       unsigned int INTERVAL_MS = 20,
-                      long int COUNTS_PER_REVOLUTION = 4560);
+                      long int COUNTS_PER_REVOLUTION = 4460);
 
         Motor_Wrapper(unsigned int port, size_t motorNum = 1,
                       unsigned int INTERVAL_MS = 20,
-                      long int COUNTS_PER_REVOLUTION = 4560);
+                      long int COUNTS_PER_REVOLUTION = 4460);
 
         ~Motor_Wrapper();
 
