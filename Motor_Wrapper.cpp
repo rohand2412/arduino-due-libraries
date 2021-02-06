@@ -183,13 +183,13 @@ bool Motor_Wrapper::getState(size_t motor /*= MOTOR_LEFT*/) const
 
 void Motor_Wrapper::run(int speed, size_t motor /*= MOTOR_ALL*/)
 {
-    start();
+    setState(MOTOR_ON, motor);
     setSpeed(speed, motor);
 }
 
 void Motor_Wrapper::run(int* speeds)
 {
-    start();
+    setState(speeds);
     setSpeed(speeds);
 }
 
