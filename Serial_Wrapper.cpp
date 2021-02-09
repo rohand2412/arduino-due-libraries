@@ -63,40 +63,7 @@ void Serial_Wrapper::send(const uint8_t* buffer, size_t bufferLen, UARTClass& po
     //Iterate through packet items
     for (size_t item = 0; item < bufferLen; item++)
     {
-        //Check if item is too big
-        if (buffer[item] > 0x1f)
-        {
-            //Start Serial if it hasn't been started
-            if (!Serial)
-            {
-                begin(115200, Serial);
-            }
-
-            //Make user aware of error
-            while (true)
-            {
-                Serial.println("[ERROR] TRYING TO SEND BYTE BIGGER THAN 0x1f");
-            }
-        }
-        //Item is in right number range
-        else
-        {
-            //Check if item is a delimeter or escape byte
-            if (buffer[item] == _DELIMITER_BYTE || buffer[item] == _ESCAPE_BYTE)
-            {
-                //Write escape byte
-                port.write(_doCRC(_ESCAPE_BYTE));
-
-                //Escape item and then write it
-                port.write(_doCRC(_escape(buffer[item])));
-            }
-            //Item doesn't conflict
-            else
-            {
-                //Write item
-                port.write(_doCRC(buffer[item]));
-            }
-        }
+        _write(buffer[item], port);
     }
 
     //End packet with delimeter byte
@@ -149,6 +116,25 @@ size_t Serial_Wrapper::receive(uint8_t* buffer, size_t bufferLen, UARTClass& por
 
     //Return -1 if packet has been completed yet
     return 0xFFFFFFFF; //return -1
+}
+
+void Serial_Wrapper::_write(uint8_t item, UARTClass& port)
+{
+    //Check if item is a delimeter or escape byte
+    if (item == _DELIMITER_BYTE || item == _ESCAPE_BYTE)
+    {
+        //Write escape byte
+        port.write(_doCRC(_ESCAPE_BYTE));
+
+        //Escape item and then write it
+        port.write(_doCRC(_escape(item)));
+    }
+    //Item doesn't conflict
+    else
+    {
+        //Write item
+        port.write(_doCRC(item));
+    }
 }
 
 bool Serial_Wrapper::_receiveSM(uint8_t *buffer, size_t *itemNum, size_t bufferLen, uint8_t byte_in)

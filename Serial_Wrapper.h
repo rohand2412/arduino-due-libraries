@@ -34,6 +34,8 @@ class Serial_Wrapper
     private:
         Serial_Wrapper();
 
+        static void _write(uint8_t item, UARTClass& port);
+
         static bool _receiveSM(uint8_t *buffer, size_t *i, size_t bufferLen, uint8_t byte_in);
 
         static uint8_t _doCRC(uint8_t message);
