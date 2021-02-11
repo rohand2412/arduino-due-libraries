@@ -55,19 +55,46 @@ void Serial_Wrapper::setDefault(const UARTClass& port)
     _port = port;
 }
 
-void Serial_Wrapper::send(const uint8_t* buffer, size_t bufferLen, UARTClass& port /*= _port*/)
+void Serial_Wrapper::send(const long* buffer, size_t bufferLen, UARTClass& port /*= _port*/)
 {
     //Start packet with delimiter byte
-    port.write(_doCRC(_DELIMITER_BYTE));
+    port.write(_doCRC(_PACKET_DELIMITER_BYTE));
 
     //Iterate through packet items
     for (size_t item = 0; item < bufferLen; item++)
     {
-        _write(buffer[item], port);
+        port.write(_doCRC(_ITEM_DELIMITER_BYTE));
+
+        uint8_t itemByte = buffer[item];
+        uint8_t itemBytes[_MAX_ITEM_BYTES];
+        size_t bytes = 0;
+
+        for (bytes; bytes < _MAX_ITEM_BYTES; bytes++)
+        {
+            itemBytes[bytes] = itemByte & 0x1F;
+            itemByte = itemByte >> 5;
+        }
+
+        bytes--;
+
+        for (bytes; bytes > 0; bytes--)
+        {
+            if (itemBytes[bytes] != 0)
+            {
+                break;
+            }
+        }
+
+        for (size_t byteIndex = bytes; byteIndex < _MAX_ITEM_BYTES; byteIndex--)
+        {
+            _write(itemBytes[byteIndex], port);
+        }
+
+        port.write(_doCRC(_ITEM_DELIMITER_BYTE));
     }
 
     //End packet with delimeter byte
-    port.write(_doCRC(_DELIMITER_BYTE));
+    port.write(_doCRC(_PACKET_DELIMITER_BYTE));
 }
 
 size_t Serial_Wrapper::receive(uint8_t* buffer, size_t bufferLen, UARTClass& port /*= _port*/)
@@ -121,7 +148,7 @@ size_t Serial_Wrapper::receive(uint8_t* buffer, size_t bufferLen, UARTClass& por
 void Serial_Wrapper::_write(uint8_t item, UARTClass& port)
 {
     //Check if item is a delimeter or escape byte
-    if (item == _DELIMITER_BYTE || item == _ESCAPE_BYTE)
+    if (item == _PACKET_DELIMITER_BYTE || item == _ITEM_DELIMITER_BYTE || item == _ESCAPE_BYTE)
     {
         //Write escape byte
         port.write(_doCRC(_ESCAPE_BYTE));
@@ -144,7 +171,7 @@ bool Serial_Wrapper::_receiveSM(uint8_t *buffer, size_t *itemNum, size_t bufferL
     {
         case _State::INIT:
             //Check for packet start or end
-            if (byte_in == _DELIMITER_BYTE)
+            if (byte_in == _PACKET_DELIMITER_BYTE)
             {
                 //Switch state to NORMAL
                 _state = _State::NORMAL;
@@ -155,7 +182,7 @@ bool Serial_Wrapper::_receiveSM(uint8_t *buffer, size_t *itemNum, size_t bufferL
 
         case _State::NORMAL:
             //Check for packet start or end
-            if (byte_in == _DELIMITER_BYTE)
+            if (byte_in == _PACKET_DELIMITER_BYTE)
             {
                 //Assume it is an end
                 //and return true
