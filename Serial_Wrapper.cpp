@@ -6,6 +6,8 @@ UARTClass Serial_Wrapper::_port = Serial;
 
 size_t Serial_Wrapper::_itemNum = 0;
 
+unsigned long Serial_Wrapper::_item = 0;
+
 const uint8_t Serial_Wrapper::_CRC_CALCULATOR[0x20] =
     {0,
      3, 6, 5, 7, 4, 1, 2, 5, 6, 3,
@@ -104,7 +106,7 @@ void Serial_Wrapper::send(const long* buffer, size_t bufferLen, UARTClass& port 
     port.write(_doCRC(_PACKET_DELIMITER_BYTE));
 }
 
-size_t Serial_Wrapper::receive(uint8_t* buffer, size_t bufferLen, UARTClass& port /*= _port*/)
+size_t Serial_Wrapper::receive(long* buffer, size_t bufferLen, UARTClass& port /*= _port*/)
 {
     //Allocate memory for incoming message
     uint8_t message;
@@ -145,6 +147,7 @@ size_t Serial_Wrapper::receive(uint8_t* buffer, size_t bufferLen, UARTClass& por
             //Reset packet reading
             _state = _State::INIT;
             _itemNum = 0;
+            _item = 0;
         }
     }
 
@@ -171,7 +174,7 @@ void Serial_Wrapper::_write(uint8_t item, UARTClass& port)
     }
 }
 
-bool Serial_Wrapper::_receiveSM(uint8_t *buffer, size_t *itemNum, size_t bufferLen, uint8_t byte_in)
+bool Serial_Wrapper::_receiveSM(long *buffer, size_t *itemNum, size_t bufferLen, uint8_t byte_in)
 {
     //Switch on state of state machine
     switch (_state)
@@ -196,6 +199,21 @@ bool Serial_Wrapper::_receiveSM(uint8_t *buffer, size_t *itemNum, size_t bufferL
                 return true;
             }
 
+            if (byte_in == _ITEM_DELIMITER_BYTE)
+            {
+                if (_item & 0x1)
+                {
+                    buffer[(*itemNum)++] = (_item >> 1) * -1;
+                }
+                else
+                {
+                    buffer[(*itemNum)++] = _item >> 1;
+                }
+
+                _item = 0;
+                return false;
+            }
+
             //Check if next byte needs to be unescaped
             if (byte_in == _ESCAPE_BYTE)
             {
@@ -209,14 +227,16 @@ bool Serial_Wrapper::_receiveSM(uint8_t *buffer, size_t *itemNum, size_t bufferL
             //If made it here, byte is just regular item in packet
             
             //Store item in buffer
-            buffer[(*itemNum)++] = byte_in;
+            _item = _item << _ITEM_BIT_LEN;
+            _item += byte_in;
 
             //Packet hasn't been completed yet
             return false;
         
         case _State::ESCAPE:
             //Store unescaped byte
-            buffer[(*itemNum)++] = _unescape(byte_in);
+            _item = _item << _ITEM_BIT_LEN;
+            _item += _unescape(byte_in);
 
             //Switch state back to NORMAL
             _state = _State::NORMAL;

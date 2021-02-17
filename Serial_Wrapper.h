@@ -25,6 +25,7 @@ class Serial_Wrapper
         static _State _state;
 
         static size_t _itemNum;
+        static unsigned long _item;
 
     public:
         static void begin(uint32_t baudRate, UARTClass& port);
@@ -33,14 +34,14 @@ class Serial_Wrapper
 
         static void send(const long* buffer, size_t bufferLen, UARTClass& port = _port);
 
-        static size_t receive(uint8_t* buffer, size_t bufferLen, UARTClass& port = _port);
+        static size_t receive(long* buffer, size_t bufferLen, UARTClass& port = _port);
 
     private:
         Serial_Wrapper();
 
         static void _write(uint8_t item, UARTClass& port);
 
-        static bool _receiveSM(uint8_t *buffer, size_t *i, size_t bufferLen, uint8_t byte_in);
+        static bool _receiveSM(long *buffer, size_t *i, size_t bufferLen, uint8_t byte_in);
 
         static uint8_t _doCRC(uint8_t message);
 
