@@ -74,7 +74,7 @@ void Serial_Wrapper::send(const long* buffer, size_t bufferLen, UARTClass& port 
         for (bytes; bytes < _MAX_ITEM_BYTES; bytes++)
         {
             itemBytes[bytes] = itemByte & 0x1F;
-            itemByte = itemByte >> 5;
+            itemByte = itemByte >> _ITEM_BIT_LEN;
         }
 
         bytes--;
