@@ -65,7 +65,7 @@ void Serial_Wrapper::send(const long* buffer, size_t bufferLen, UARTClass& port 
     {
         port.write(_doCRC(_ITEM_DELIMITER_BYTE));
 
-        uint8_t itemByte = buffer[item];
+        long itemByte = buffer[item];
         uint8_t itemBytes[_MAX_ITEM_BYTES];
         size_t bytes = 0;
 
