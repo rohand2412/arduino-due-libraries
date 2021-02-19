@@ -25,7 +25,6 @@ class Serial_Wrapper
         static _State _state;
 
         static size_t _itemNum;
-        static unsigned long _item;
 
     public:
         static void begin(uint32_t baudRate, UARTClass& port);

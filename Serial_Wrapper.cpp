@@ -6,8 +6,6 @@ UARTClass Serial_Wrapper::_port = Serial;
 
 size_t Serial_Wrapper::_itemNum = 0;
 
-unsigned long Serial_Wrapper::_item = 0;
-
 const uint8_t Serial_Wrapper::_CRC_CALCULATOR[0x20] =
     {0,
      3, 6, 5, 7, 4, 1, 2, 5, 6, 3,
@@ -138,7 +136,6 @@ size_t Serial_Wrapper::receive(long* buffer, size_t bufferLen, UARTClass& port /
             //Reset packet reading
             _state = _State::INIT;
             _itemNum = 0;
-            _item = 0;
         }
     }
 
@@ -192,9 +189,12 @@ bool Serial_Wrapper::_receiveSM(long *buffer, size_t *itemNum, size_t bufferLen,
 
             if (byte_in == _ITEM_DELIMITER_BYTE)
             {
-                buffer[(*itemNum)++] = _item;
+                (*itemNum)++;
+                if ((*itemNum) < bufferLen)
+                {
+                    buffer[(*itemNum)] = 0;
+                }
 
-                _item = 0;
                 return false;
             }
 
@@ -211,16 +211,16 @@ bool Serial_Wrapper::_receiveSM(long *buffer, size_t *itemNum, size_t bufferLen,
             //If made it here, byte is just regular item in packet
             
             //Store item in buffer
-            _item = _item << _ITEM_BIT_LEN;
-            _item += byte_in;
+            buffer[(*itemNum)] = buffer[(*itemNum)] << _ITEM_BIT_LEN;
+            buffer[(*itemNum)] += byte_in;
 
             //Packet hasn't been completed yet
             return false;
         
         case _State::ESCAPE:
             //Store unescaped byte
-            _item = _item << _ITEM_BIT_LEN;
-            _item += _unescape(byte_in);
+            buffer[(*itemNum)] = buffer[(*itemNum)] << _ITEM_BIT_LEN;
+            buffer[(*itemNum)] += _unescape(byte_in);
 
             //Switch state back to NORMAL
             _state = _State::NORMAL;
