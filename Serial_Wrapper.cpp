@@ -65,16 +65,7 @@ void Serial_Wrapper::send(const long* buffer, size_t bufferLen, UARTClass& port 
     //Iterate through packet items
     for (size_t item = 0; item < bufferLen; item++)
     {
-        unsigned long itemByte;
-        if (buffer[item] < 0)
-        {
-            itemByte = (abs(buffer[item]) << 1) + 1;
-        }
-        else
-        {
-            itemByte = abs(buffer[item]) << 1;
-        }
-
+        unsigned long itemByte = buffer[item];
         uint8_t itemBytes[_MAX_ITEM_BYTES];
         size_t bytes = 0;
 
@@ -201,14 +192,7 @@ bool Serial_Wrapper::_receiveSM(long *buffer, size_t *itemNum, size_t bufferLen,
 
             if (byte_in == _ITEM_DELIMITER_BYTE)
             {
-                if (_item & 0x1)
-                {
-                    buffer[(*itemNum)++] = (_item >> 1) * -1;
-                }
-                else
-                {
-                    buffer[(*itemNum)++] = _item >> 1;
-                }
+                buffer[(*itemNum)++] = _item;
 
                 _item = 0;
                 return false;
