@@ -194,6 +194,19 @@ bool Serial_Wrapper::_receiveSM(long *buffer, size_t *itemNum, size_t bufferLen,
                 {
                     buffer[(*itemNum)] = 0;
                 }
+                else
+                {
+                    if (!Serial)
+                    {
+                        begin(750000, Serial);
+                    }
+
+                    while (true)
+                    {
+                        Serial.println("[ERROR] PACKET LENGTH OVERFLOW! PLEASE ALLOCATE MORE MEMORY!");
+                    }
+                }
+                
 
                 return false;
             }
