@@ -25,7 +25,7 @@ void Serial_Wrapper::begin(uint32_t baudRate, UARTClass& port)
     if (baudRate > 115200 && baudRate != 750000)
     {
         //Start Serial
-        Serial.begin(115200);
+        begin(750000, Serial);
 
         //Make user aware of error
         while (true)
@@ -270,7 +270,7 @@ uint8_t Serial_Wrapper::_undoCRC(uint8_t crc_byte)
         //Start Serial if not started already
         if (!Serial)
         {
-            begin(115200, Serial);
+            begin(750000, Serial);
         }
 
         //Make user aware of corrupted byte
