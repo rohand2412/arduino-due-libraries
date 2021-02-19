@@ -63,31 +63,47 @@ void Serial_Wrapper::send(const long* buffer, size_t bufferLen, UARTClass& port 
     //Iterate through packet items
     for (size_t item = 0; item < bufferLen; item++)
     {
+        //Temporary unsigned copy of the current item
         unsigned long itemByte = buffer[item];
+
+        //Array of the bytes that item would be split into
         uint8_t itemBytes[_MAX_ITEM_BYTES];
+
+        //Number of bytes that the item would be split into
         size_t bytes = 0;
 
+        //Split item into groups of five bits
         for (bytes; bytes < _MAX_ITEM_BYTES; bytes++)
         {
+            //Save least significant 5 bits
             itemBytes[bytes] = itemByte & 0x1F;
+
+            //Shift copy 5 bits to the right
             itemByte = itemByte >> _ITEM_BIT_LEN;
         }
 
+        //Reduced to largest index instead of number of bytes
         bytes--;
 
+        //Iterate down from the largest index
         for (bytes; bytes > 0; bytes--)
         {
+            //Check if current group of five bits is not empty
             if (itemBytes[bytes] != 0)
             {
+                //Stop short as soon as we hit actual bit data
                 break;
             }
         }
 
+        //Send bytes from msb to lsb
         for (size_t byteIndex = bytes; byteIndex < _MAX_ITEM_BYTES; byteIndex--)
         {
+            //Write individual byte to the port
             _write(itemBytes[byteIndex], port);
         }
 
+        //Complete item exchange with item delimiter
         port.write(_doCRC(_ITEM_DELIMITER_BYTE));
     }
 
@@ -187,27 +203,37 @@ bool Serial_Wrapper::_receiveSM(long *buffer, size_t *itemNum, size_t bufferLen,
                 return true;
             }
 
+            //Check for item end
             if (byte_in == _ITEM_DELIMITER_BYTE)
             {
+                //Increment item index of buffer
                 (*itemNum)++;
+
+                //Check if itemNum doesn't exceed array length
                 if ((*itemNum) < bufferLen)
                 {
+                    //Clear any previous data
                     buffer[(*itemNum)] = 0;
                 }
+                //itemNum exceeds array length
                 else
                 {
+                    //Check if Serial has already been started
                     if (!Serial)
                     {
+                        //Start serial at 750000 baud
                         begin(750000, Serial);
                     }
 
+                    //Endlessly repeat
                     while (true)
                     {
+                        //Spam user with error messages
                         Serial.println("[ERROR] PACKET LENGTH OVERFLOW! PLEASE ALLOCATE MORE MEMORY!");
                     }
                 }
-                
 
+                //Packet is still not complete
                 return false;
             }
 
