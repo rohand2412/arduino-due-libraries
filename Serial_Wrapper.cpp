@@ -132,7 +132,14 @@ size_t Serial_Wrapper::receive(long* buffer, size_t bufferLen, UARTClass& port /
                 //Check if state machine returned packet with zero length
                 if (_itemNum == 0)
                 {
-                    //If so, keep looping
+                    //Start of new packet so clear buffer
+                    for (size_t item = 0; item < bufferLen; item++)
+                    {
+                        //Reset each item to 0
+                        buffer[item] = 0;
+                    }
+
+                    //Continue looping for incoming packet
                     continue;
                 }
 
@@ -209,14 +216,8 @@ bool Serial_Wrapper::_receiveSM(long *buffer, size_t *itemNum, size_t bufferLen,
                 //Increment item index of buffer
                 (*itemNum)++;
 
-                //Check if itemNum doesn't exceed array length
-                if ((*itemNum) < bufferLen)
-                {
-                    //Clear any previous data
-                    buffer[(*itemNum)] = 0;
-                }
-                //itemNum exceeds array length
-                else
+                //Check if itemNum exceeds array length
+                if ((*itemNum) >= bufferLen)
                 {
                     //Check if Serial has already been started
                     if (!Serial)
