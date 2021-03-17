@@ -422,6 +422,7 @@ void Motor_Wrapper::_setPid(double kp, double ki, double kd, size_t motor)
         //Configure PID
         _PidPtr[motor]->SetSampleTime(_INTERVAL_MS);
         _PidPtr[motor]->SetMode(AUTOMATIC);
+        _PidPtr[motor]->SetOutputLimits(-255, 255);
 
         //Indicate that PID is now initialized
         _initializedPid[motor] = true;
