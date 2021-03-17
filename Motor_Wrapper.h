@@ -75,6 +75,8 @@ class Motor_Wrapper
 
         double getOutput(size_t motor);
 
+        double getInput(size_t motor);
+
         void setSpeedMultiplier(int speedMultiplier, size_t motor = MOTOR_ALL);
 
         void setSpeedMultiplier(int* speedMultipliers);

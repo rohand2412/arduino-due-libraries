@@ -183,6 +183,11 @@ double Motor_Wrapper::getOutput(size_t motor)
     return _outputs[motor];
 }
 
+double Motor_Wrapper::getInput(size_t motor)
+{
+    return _inputs[motor];
+}
+
 void Motor_Wrapper::setSpeedMultiplier(int speedMultiplier, size_t motor /*= MOTOR_ALL*/)
 {
     //Check if data is for all motors
