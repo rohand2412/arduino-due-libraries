@@ -7,8 +7,6 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
                              unsigned int INTERVAL_MS /*= 20*/,
                              long int COUNTS_PER_REVOLUTION /*= 4460*/)
                              : _motorNum(motorNum),
-                             //One more for dif PID
-                             _pidNum(_motorNum + 1),
                              _INTERVAL_MS(INTERVAL_MS),
                              _COUNTS_PER_REVOLUTION(COUNTS_PER_REVOLUTION),
                              //Calculate conversion factors
@@ -17,19 +15,13 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
 {
     //Allocate memory for motor or pid specific data
     _motorsPtr = new Adafruit_DCMotor *[_motorNum];
-    _proportionalCoefficients = new double[_pidNum];
-    _integralCoefficients = new double[_pidNum];
-    _derivativeCoefficients = new double[_pidNum];
-    _integrals = new double[_pidNum];
-    _lastErrors = new double[_pidNum];
+    _PidPtr = new PID *[_motorNum];
+    _initializedPid = new bool [_motorNum];
     _speedMultipliers = new int[_motorNum];
-    _targetSpeeds_RPS = new double[_motorNum];
-    _actualSpeeds_RPS = new double[_motorNum];
-    _lastInputtedSpeeds_PWM = new int[_motorNum];
-    _updateCounts = new long int[_motorNum];
+    _inputs = new double [_motorNum];
+    _outputs = new double [_motorNum];
+    _setpoints = new double [_motorNum];
     _states = new bool[_motorNum];
-    _lastNewSpeed_MS = new unsigned int[_motorNum];
-    _elapsedNewSpeedTime_MS = new unsigned int[_motorNum];
 
     //Iterate through motors
     for (size_t motor = 0; motor < _motorNum; motor++)
@@ -37,24 +29,13 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
         //Initialize motor specific data
         _motorsPtr[motor] = _motorShield.getMotor(ports[motor]);
         _speedMultipliers[motor] = MOTOR_NO_FLIP;
-        _targetSpeeds_RPS[motor] = 0;
-        _actualSpeeds_RPS[motor] = 0;
-        _lastInputtedSpeeds_PWM[motor] = 0;
-        _updateCounts[motor] = 0;
         _states[motor] = false;
-        _lastNewSpeed_MS[motor] = 0;
-        _elapsedNewSpeedTime_MS[motor] = 0;
-    }
 
-    //Iterate through pids
-    for (size_t pid = 0; pid < _pidNum; pid++)
-    {
         //Initialize pid specific data
-        _proportionalCoefficients[pid] = 1;
-        _integralCoefficients[pid] = 0;
-        _derivativeCoefficients[pid] = 0;
-        _integrals[pid] = 0;
-        _lastErrors[pid] = 0;
+        _initializedPid[motor] = false;
+        _inputs[motor] = 0.0f;
+        _outputs[motor] = 0.0f;
+        _setpoints[motor] = 0.0f;
     }
 
     //Initialize update specific data
@@ -76,19 +57,18 @@ Motor_Wrapper::~Motor_Wrapper()
 {
     //Release heap allocated memory
     delete[] _motorsPtr;
-    delete[] _proportionalCoefficients;
-    delete[] _integralCoefficients;
-    delete[] _derivativeCoefficients;
-    delete[] _integrals;
-    delete[] _lastErrors;
+    delete[] _initializedPid;
     delete[] _speedMultipliers;
-    delete[] _targetSpeeds_RPS;
-    delete[] _actualSpeeds_RPS;
-    delete[] _lastInputtedSpeeds_PWM;
-    delete[] _updateCounts;
     delete[] _states;
-    delete[] _lastNewSpeed_MS;
-    delete[] _elapsedNewSpeedTime_MS;
+    delete[] _inputs;
+    delete[] _outputs;
+    delete[] _setpoints;
+
+    for (size_t motor = 0; motor < _motorNum; motor++)
+    {
+        delete _PidPtr[motor];
+    }
+    delete[] _PidPtr;
 }
 
 void Motor_Wrapper::setEncoders(unsigned int* pins)
@@ -97,10 +77,7 @@ void Motor_Wrapper::setEncoders(unsigned int* pins)
     _encoders.createSensor(pins, _motorNum);
 }
 
-void Motor_Wrapper::setPid(double proportionalCoefficient,
-                           double integralCoefficient, 
-                           double derivativeCoefficient,
-                           size_t motor /*= MOTOR_ALL*/)
+void Motor_Wrapper::setPid(double kp, double ki, double kd, size_t motor /*= MOTOR_ALL*/)
 {
     //Check if data is for all motors
     if (motor == MOTOR_ALL)
@@ -109,35 +86,24 @@ void Motor_Wrapper::setPid(double proportionalCoefficient,
         for (size_t motor = 0; motor < _motorNum; motor++)
         {
             //Initialize pid data for iterated motor
-            _setPid(proportionalCoefficient,
-                    integralCoefficient,
-                    derivativeCoefficient,
-                    motor);
+            _setPid(kp, ki, kd, motor);
         }
     }
     //Pid data is for single motor
     else
     {
         //Initialize pid data for single motor
-        _setPid(proportionalCoefficient,
-                integralCoefficient,
-                derivativeCoefficient,
-                motor);
+        _setPid(kp, ki, kd, motor);
     }
 }
 
-void Motor_Wrapper::setPid(double* proportionalCoefficients,
-                           double* integralCoefficients,
-                           double* derivativeCoefficients)
+void Motor_Wrapper::setPid(double* kps, double* kis, double* kds)
 {
     //Iterate through motors
     for (size_t motor = 0; motor < _motorNum; motor++)
     {
         //Initialize pid data for iterated motor
-        _setPid(proportionalCoefficients[motor],
-                integralCoefficients[motor],
-                derivativeCoefficients[motor],
-                motor);
+        _setPid(kps[motor], kis[motor], kds[motor], motor);
     }
 }
 
@@ -162,43 +128,26 @@ void Motor_Wrapper::begin()
 
 void Motor_Wrapper::update()
 {
+    for (size_t motor = 0; motor < _motorNum; motor++)
+    {
+        //Update PID controller
+        _PidPtr[motor]->Compute();
+    }
+
     //Check if _INTERVAL_MS has passed
     if (millis() - _lastUpdated_MS >= _INTERVAL_MS)
     {
-        //Declare new speed vars
-        double newSpeeds[_motorNum];
-
         //Iterate through motors
         for (size_t motor = 0; motor < _motorNum; motor++)
         {
+            //Update input to the PID
+            _updateInput(millis() - _lastUpdated_MS, motor);
+
             //Check if speed is not 0 and state is on
-            if (getSpeed(motor) != 0 && getState(motor))
+            if (!Utilities::isEqual_DBL(_setpoints[motor], 0) && getState(motor))
             {
-                //Initialize new speed var with pid result
-                newSpeeds[motor] = _getNewSpeed(motor);
-            }
-        }
-
-        //Initialize correction with dif pid result
-        double correction = _getNewSpeed(MOTOR_DIF);
-
-        //Initialize var for alternating correction signs
-        int sign = 1;
-
-        //Iterate through motors
-        for (size_t motor = 0; motor < _motorNum; motor++)
-        {
-            //Check if speed is not 0 and state is on
-            if (getSpeed(motor) != 0 && getState(motor))
-            {
-                //Evaluate speed to be inputted and round to int
-                _lastInputtedSpeeds_PWM[motor] = round(newSpeeds[motor] + sign * correction);
-
                 //Update motor with new speed to be inputted
-                _updateMotor(_getLastInputtedSpeed(motor), motor);
-
-                //Alternate correction signs
-                sign *= -1;
+                _updateMotor((int)_outputs[motor], motor);
             }
         }
 
@@ -229,22 +178,9 @@ bool Motor_Wrapper::getJustUpdated()
     }
 }
 
-unsigned int Motor_Wrapper::getLastNewSpeed_MS(size_t motor /*= MOTOR_LEFT*/) const
+double Motor_Wrapper::getOutput(size_t motor)
 {
-    //Return time at which new speed for motor was last generated
-    return _lastNewSpeed_MS[motor];
-}
-
-unsigned int Motor_Wrapper::getElapsedNewSpeedTime_MS(size_t motor /*= MOTOR_LEFT*/) const
-{
-    //Return how much time passed between latest generation of new speed for motor
-    return _elapsedNewSpeedTime_MS[motor];
-}
-
-long int Motor_Wrapper::getUpdateCounts(size_t motor /*= MOTOR_LEFT*/) const
-{
-    //Return number of counts between latest generation of new speed for motor
-    return _updateCounts[motor];
+    return _outputs[motor];
 }
 
 void Motor_Wrapper::setSpeedMultiplier(int speedMultiplier, size_t motor /*= MOTOR_ALL*/)
@@ -316,13 +252,13 @@ void Motor_Wrapper::setSpeed(double* speeds)
 double Motor_Wrapper::getSpeed(size_t motor /*= MOTOR_LEFT*/) const
 {
     //Return target speed or speed that was inputted by user
-    return _targetSpeeds_RPS[motor];
+    return _setpoints[motor] * _COUNTS_PER_INTERVAL_MS_TO_RPS;
 }
 
 double Motor_Wrapper::getActualSpeed(size_t motor /*= MOTOR_LEFT*/) const
 {
     //Return actual speed at which motor is rotating
-    return _actualSpeeds_RPS[motor];
+    return _inputs[motor] * _COUNTS_PER_INTERVAL_MS_TO_RPS;
 }
 
 void Motor_Wrapper::setState(bool state, size_t motor /*= MOTOR_ALL*/)
@@ -420,10 +356,10 @@ unsigned int Motor_Wrapper::getEncoderPin(size_t sensor /*= Encoder_Wrapper::ENC
     return _encoders.getPin(sensor, index);
 }
 
-int Motor_Wrapper::_getLastInputtedSpeed(size_t motor /*= MOTOR_LEFT*/) const
+void Motor_Wrapper::_updateInput(unsigned int elapsedTime, size_t motor)
 {
-    //Return last pwm speed that was inputted to motor
-    return _lastInputtedSpeeds_PWM[motor];
+    _inputs[motor] = getCount(motor) * (double)_INTERVAL_MS / (double)elapsedTime;
+    resetCount(motor);
 }
 
 void Motor_Wrapper::_updateMotor(int newSpeed, size_t motor /*= MOTOR_LEFT*/)
@@ -472,77 +408,32 @@ void Motor_Wrapper::_updateMotor(int newSpeed, size_t motor /*= MOTOR_LEFT*/)
     }
 }
 
-double Motor_Wrapper::_getNewSpeed(size_t pid /*= MOTOR_LEFT*/)
+void Motor_Wrapper::_setPid(double kp, double ki, double kd, size_t motor)
 {
-    //Declare error var
-    double error;
-
-    //Check if pid is dif pid
-    if (pid == MOTOR_DIF)
+    if (!_initializedPid[motor])
     {
-        //Error is dif of left and right motor errors
-        error = _lastErrors[MOTOR_LEFT] - _lastErrors[MOTOR_RIGHT];
+        //Cancel out internal conversion
+        ki *= 100 / _INTERVAL_MS;
+        kd /= 100 / _INTERVAL_MS;
+
+        //Initialize coefficients for motor
+        _PidPtr[motor] = new PID(&_inputs[motor], &_outputs[motor], &_setpoints[motor], kp, ki, kd, DIRECT);
+
+        //Configure PID
+        _PidPtr[motor]->SetSampleTime(_INTERVAL_MS);
+        _PidPtr[motor]->SetMode(AUTOMATIC);
+
+        //Indicate that PID is now initialized
+        _initializedPid[motor] = true;
     }
-    //Pid is a motor pid
     else
     {
-        //Convert target to counts per interval ms
-        double target = getSpeed(pid) * _RPS_TO_COUNTS_PER_INTERVAL_MS;
-
-        //Calculate elapsed time from last generation of a new speed
-        _elapsedNewSpeedTime_MS[pid] = millis() - _lastNewSpeed_MS[pid];
-
-        //Retrieve encoder counts of motor
-        _updateCounts[pid] = getCount(pid);
-
-        //Scale counts to interval ms in case of late entry into _getNewSpeed
-        double value = _updateCounts[pid] * (double) _INTERVAL_MS / (double) _elapsedNewSpeedTime_MS[pid];
-
-        //Convert scaled counts back to rps for actual speed
-        _actualSpeeds_RPS[pid] = value * _COUNTS_PER_INTERVAL_MS_TO_RPS;
-
-        //Calculate error
-        error = target - value;
+        if (!Serial)
+        {
+            Serial.begin(112500);
+        }
+        Serial.println("[ERROR] PID HAS ALREADY BEEN INITIALIZED");
     }
-
-    //Increase integral by error
-    _integrals[pid] += error;
-
-    //Calculate derivative
-    double derivative = error - _lastErrors[pid];
-
-    //Use pid to generate new speed
-    double newSpeed = Utilities::calculatePid(error, derivative, _integrals[pid],
-                                              _proportionalCoefficients[pid],
-                                              _integralCoefficients[pid],
-                                              _derivativeCoefficients[pid]);
-
-    //Set last error to current error
-    _lastErrors[pid] = error;
-
-    //Check if pid is not dif pid
-    if (!(pid == MOTOR_DIF))
-    {
-        //Reset encoder counts of motor
-        _encoders.resetCount(pid);
-
-        //Set last call time to current time
-        _lastNewSpeed_MS[pid] = millis();
-    }
-
-    //Return computed new speed
-    return newSpeed;
-}
-
-void Motor_Wrapper::_setPid(double proportionalCoefficient,
-                            double integralCoefficient,
-                            double derivativeCoefficient,
-                            size_t motor)
-{
-    //Initialize coefficients for motor
-    _proportionalCoefficients[motor] = proportionalCoefficient;
-    _integralCoefficients[motor] = integralCoefficient;
-    _derivativeCoefficients[motor] = derivativeCoefficient;
 }
 
 void Motor_Wrapper::_setSpeedMultiplier(int speedMultiplier, size_t motor)
@@ -554,13 +445,25 @@ void Motor_Wrapper::_setSpeedMultiplier(int speedMultiplier, size_t motor)
 void Motor_Wrapper::_setSpeed(double speed, size_t motor)
 {
     //Initialize target speed for motor
-    _targetSpeeds_RPS[motor] = speed;
+    _setpoints[motor] = speed * _RPS_TO_COUNTS_PER_INTERVAL_MS;
 
     //Check if speed is 0
-    if (!speed)
+    if (Utilities::isEqual_DBL(speed, 0))
     {
         //Cut power to motor immediately
         _motorsPtr[motor]->run(RELEASE);
+
+        //Disable PID
+        _PidPtr[motor]->SetMode(MANUAL);
+    }
+    else
+    {
+        //Check if motor is on and if PID was disabled
+        if (_states[motor] && _PidPtr[motor]->GetMode() == MANUAL)
+        {
+            //Enable PID
+            _PidPtr[motor]->SetMode(AUTOMATIC);
+        }
     }
 }
 
@@ -574,5 +477,17 @@ void Motor_Wrapper::_setState(bool state, size_t motor)
     {
         //Cut power to motor immediately
         _motorsPtr[motor]->run(RELEASE);
+
+        //Disable PID
+        _PidPtr[motor]->SetMode(MANUAL);
+    }
+    else
+    {
+        //Check if speed is not zero and if PID was disabled
+        if (!Utilities::isEqual_DBL(_setpoints[motor], 0) && _PidPtr[motor]->GetMode() == MANUAL)
+        {
+            //Enable PID
+            _PidPtr[motor]->SetMode(AUTOMATIC);
+        }
     }
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include "PID_v1.h"
 #include "Adafruit_MotorShield.h"
 #include "Adafruit_MS_PWMServoDriver.h"
 #include "Encoder_Wrapper.h"
@@ -11,21 +12,16 @@ class Motor_Wrapper
         Adafruit_MotorShield _motorShield;
         Adafruit_DCMotor **_motorsPtr;
 
-        Encoder_Wrapper _encoders;
+        PID **_PidPtr;
+        bool *_initializedPid;
 
-        const size_t _pidNum;
-        double *_proportionalCoefficients;
-        double *_integralCoefficients;
-        double *_derivativeCoefficients;
-        double *_integrals;
-        double *_lastErrors;
+        Encoder_Wrapper _encoders;
 
         int* _speedMultipliers;
 
-        double* _targetSpeeds_RPS;
-        double* _actualSpeeds_RPS;
-        int* _lastInputtedSpeeds_PWM;
-        long int *_updateCounts;
+        double *_inputs;
+        double *_outputs;
+        double *_setpoints;
 
         bool* _states;
 
@@ -34,8 +30,6 @@ class Motor_Wrapper
         const double _RPS_TO_COUNTS_PER_INTERVAL_MS;
         const double _COUNTS_PER_INTERVAL_MS_TO_RPS;
 
-        unsigned int *_lastNewSpeed_MS;
-        unsigned int *_elapsedNewSpeedTime_MS;
         unsigned int _lastUpdated_MS;
         bool _justUpdated = false;
 
@@ -69,14 +63,9 @@ class Motor_Wrapper
 
         void setEncoders(unsigned int* pins);
 
-        void setPid(double proportionalCoefficient,
-                    double integralCoefficient,
-                    double derivativeCoefficient,
-                    size_t motor = MOTOR_ALL);
+        void setPid(double kp, double ki, double kd, size_t motor = MOTOR_ALL);
 
-        void setPid(double* proportionalCoefficients,
-                    double* integralCoefficients,
-                    double* derivativeCoefficients);
+        void setPid(double* kps, double* kis, double* kds);
 
         void begin();
 
@@ -84,11 +73,7 @@ class Motor_Wrapper
 
         bool getJustUpdated();
 
-        unsigned int getLastNewSpeed_MS(size_t motor = MOTOR_LEFT) const;
-
-        unsigned int getElapsedNewSpeedTime_MS(size_t motor = MOTOR_LEFT) const;
-
-        long int getUpdateCounts(size_t motor = MOTOR_LEFT) const;
+        double getOutput(size_t motor);
 
         void setSpeedMultiplier(int speedMultiplier, size_t motor = MOTOR_ALL);
 
@@ -130,16 +115,11 @@ class Motor_Wrapper
                                    size_t index = Encoder_Wrapper::ENCODER_OUT_A) const;
     
     private:
-        int _getLastInputtedSpeed(size_t motor = MOTOR_LEFT) const;
+        void _updateInput(unsigned int elapsedTime, size_t motor);
 
         void _updateMotor(int newSpeed, size_t motor = MOTOR_LEFT);
 
-        double _getNewSpeed(size_t pid = MOTOR_LEFT);
-
-        void _setPid(double proportionalCoefficient,
-                     double integralCoefficient,
-                     double derivativeCoefficient,
-                     size_t motor);
+        void _setPid(double kp, double ki, double kd, size_t motor);
         
         void _setSpeedMultiplier(int speedMultiplier, size_t motor);
 
