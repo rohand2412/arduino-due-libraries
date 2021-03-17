@@ -142,7 +142,11 @@ void Motor_Wrapper::update()
         {
             //Update input to the PID
             _updateInput(millis() - _lastUpdated_MS, motor);
+        }
 
+        //Iterate through motors
+        for (size_t motor = 0; motor < _motorNum; motor++)
+        {
             //Check if speed is not 0 and state is on
             if (!Utilities::isEqual_DBL(_setpoints[motor], 0) && getState(motor))
             {
