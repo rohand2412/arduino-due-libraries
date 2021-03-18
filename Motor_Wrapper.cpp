@@ -367,8 +367,15 @@ unsigned int Motor_Wrapper::getEncoderPin(size_t sensor /*= Encoder_Wrapper::ENC
 
 void Motor_Wrapper::_updateInput(unsigned int elapsedTime, size_t motor)
 {
-    _inputs[motor] = getCount(motor) * (double)_INTERVAL_MS / (double)elapsedTime;
-    resetCount(motor);
+    //Check if Pid is enabled
+    if (_PidPtr[motor]->GetMode() == AUTOMATIC)
+    {
+        //Fetch and scale encoder readings
+        _inputs[motor] = getCount(motor) * (double)_INTERVAL_MS / (double)elapsedTime;
+
+        //Reset for next reading
+        resetCount(motor);
+    }
 }
 
 void Motor_Wrapper::_updateMotor(int newSpeed, size_t motor /*= MOTOR_LEFT*/)
