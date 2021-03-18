@@ -134,16 +134,6 @@ void Motor_Wrapper::update()
     {
         //Update PID controller
         _PidPtr[motor]->Compute();
-
-        if (_PidPtr[motor]->GetMode() == AUTOMATIC)
-        {
-            Serial.print("AUTO");
-        }
-        else
-        {
-            Serial.print("MANU");
-        }
-        Serial.print("\t");
     }
 
     //Check if _INTERVAL_MS has passed
@@ -208,6 +198,16 @@ double Motor_Wrapper::getOutput(size_t motor /*= MOTOR_LEFT*/) const
 double Motor_Wrapper::getInput(size_t motor /*= MOTOR_LEFT*/) const
 {
     return _inputs[motor];
+}
+
+bool Motor_Wrapper::getMode(size_t motor /*= MOTOR_LEFT*/) const
+{
+    return _mode[motor];
+}
+
+bool Motor_Wrapper::getActualMode(size_t motor /*= MOTOR_LEFT*/)
+{
+    return _PidPtr[motor]->GetMode();
 }
 
 void Motor_Wrapper::setPwm(int pwm, size_t motor /*= MOTOR_ALL*/)

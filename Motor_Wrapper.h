@@ -78,6 +78,10 @@ class Motor_Wrapper
 
         double getInput(size_t motor = MOTOR_LEFT) const;
 
+        bool getMode(size_t motor = MOTOR_LEFT) const;
+
+        bool getActualMode(size_t motor = MOTOR_LEFT);
+
         void setPwm(int pwm, size_t motor = MOTOR_ALL);
 
         void setPwm(int *pwms);
