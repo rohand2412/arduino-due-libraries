@@ -14,6 +14,7 @@ class Motor_Wrapper
 
         PID **_PidPtr;
         bool *_initializedPid;
+        bool *_mode;
 
         Encoder_Wrapper _encoders;
 
@@ -77,6 +78,10 @@ class Motor_Wrapper
 
         double getInput(size_t motor);
 
+        void setPwm(int pwm, size_t motor = MOTOR_ALL);
+
+        void setPwm(int *pwms);
+
         void setSpeedMultiplier(int speedMultiplier, size_t motor = MOTOR_ALL);
 
         void setSpeedMultiplier(int* speedMultipliers);
@@ -122,7 +127,9 @@ class Motor_Wrapper
         void _updateMotor(int newSpeed, size_t motor = MOTOR_LEFT);
 
         void _setPid(double kp, double ki, double kd, size_t motor);
-        
+
+        void _setPwm(int pwm, size_t motor);
+
         void _setSpeedMultiplier(int speedMultiplier, size_t motor);
 
         void _setSpeed(double speed, size_t motor);

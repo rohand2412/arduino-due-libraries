@@ -17,6 +17,7 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
     _motorsPtr = new Adafruit_DCMotor *[_motorNum];
     _PidPtr = new PID *[_motorNum];
     _initializedPid = new bool [_motorNum];
+    _mode = new bool[_motorNum];
     _speedMultipliers = new int[_motorNum];
     _inputs = new double [_motorNum];
     _outputs = new double [_motorNum];
@@ -33,6 +34,7 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
 
         //Initialize pid specific data
         _initializedPid[motor] = false;
+        _mode[motor] = AUTOMATIC;
         _inputs[motor] = 0.0f;
         _outputs[motor] = 0.0f;
         _setpoints[motor] = 0.0f;
@@ -132,6 +134,16 @@ void Motor_Wrapper::update()
     {
         //Update PID controller
         _PidPtr[motor]->Compute();
+
+        if (_PidPtr[motor]->GetMode() == AUTOMATIC)
+        {
+            Serial.print("AUTO");
+        }
+        else
+        {
+            Serial.print("MANU");
+        }
+        Serial.print("\t");
     }
 
     //Check if _INTERVAL_MS has passed
@@ -148,10 +160,16 @@ void Motor_Wrapper::update()
         for (size_t motor = 0; motor < _motorNum; motor++)
         {
             //Check if speed is not 0 and state is on
-            if (!Utilities::isEqual_DBL(_setpoints[motor], 0) && getState(motor))
+            if (getState(motor))
             {
-                //Update motor with new speed to be inputted
-                _updateMotor((int)_outputs[motor], motor);
+                //Check if Pid is being used and if setpoint is not 0
+                //or if Pid is not being used and if output is not 0
+                if ((!Utilities::isEqual_DBL(_setpoints[motor], 0) && _mode[motor] == AUTOMATIC)
+                    || (!Utilities::isEqual_DBL(_outputs[motor], 0) && _mode[motor] == MANUAL))
+                {
+                    //Update motor with new speed to be inputted
+                    _updateMotor((int)_outputs[motor], motor);
+                }
             }
         }
 
@@ -190,6 +208,36 @@ double Motor_Wrapper::getOutput(size_t motor)
 double Motor_Wrapper::getInput(size_t motor)
 {
     return _inputs[motor];
+}
+
+void Motor_Wrapper::setPwm(int pwm, size_t motor /*= MOTOR_ALL*/)
+{
+    //Check if data is for all motors
+    if (motor == MOTOR_ALL)
+    {
+        //Iterate through motors
+        for (size_t motor = 0; motor < _motorNum; motor++)
+        {
+            //Set pwm for iterated motor
+            _setPwm(pwm, motor);
+        }
+    }
+    //Data is for single motor
+    else
+    {
+        //Set pwm for single motor
+        _setPwm(pwm, motor);
+    }
+}
+
+void Motor_Wrapper::setPwm(int* pwms)
+{
+    //Iterate through motors
+    for (size_t motor = 0; motor < _motorNum; motor++)
+    {
+        //Set pwm for iterated motor
+        _setPwm(pwms[motor], motor);
+    }
 }
 
 void Motor_Wrapper::setSpeedMultiplier(int speedMultiplier, size_t motor /*= MOTOR_ALL*/)
@@ -453,6 +501,34 @@ void Motor_Wrapper::_setPid(double kp, double ki, double kd, size_t motor)
     }
 }
 
+void Motor_Wrapper::_setPwm(int pwm, size_t motor)
+{
+    //Set the new output to be the pwm
+    _outputs[motor] = pwm;
+
+    //Check if we just came from _setSpeed
+    if (_mode[motor] == AUTOMATIC)
+    {
+        //Disable the Pid
+        _PidPtr[motor]->SetMode(MANUAL);
+
+        //Indicate manual mode
+        _mode[motor] = MANUAL;
+    }
+
+    //Check if pwm is 0
+    if (!pwm)
+    {
+        //Cut power immediately
+        _motorsPtr[motor]->run(RELEASE);
+    }
+    else
+    {
+        //No need for clause to re-enable Pid
+        //Pid is never used in _setPwm
+    }
+}
+
 void Motor_Wrapper::_setSpeedMultiplier(int speedMultiplier, size_t motor)
 {
     //Initialize multiplier for motor
@@ -464,6 +540,9 @@ void Motor_Wrapper::_setSpeed(double speed, size_t motor)
     //Initialize target speed for motor
     _setpoints[motor] = speed * _RPS_TO_COUNTS_PER_INTERVAL_MS;
 
+    //Indicate automatic mode
+    _mode[motor] = AUTOMATIC;
+
     //Check if speed is 0
     if (Utilities::isEqual_DBL(speed, 0))
     {
@@ -472,13 +551,18 @@ void Motor_Wrapper::_setSpeed(double speed, size_t motor)
 
         //Disable PID
         _PidPtr[motor]->SetMode(MANUAL);
+
+        //mode stays AUTOMATIC because
+        //motor is still using _setpoint[motor]
+        //or RPS and not _output[motor] or pwm
     }
     else
     {
-        //Check if motor is on and if PID was disabled
+        //Check if motor has state of on
+        //but Pid was disabled due to 0 speed
         if (_states[motor] && _PidPtr[motor]->GetMode() == MANUAL)
         {
-            //Enable PID
+            //Re-enable Pid
             _PidPtr[motor]->SetMode(AUTOMATIC);
         }
     }
@@ -497,14 +581,26 @@ void Motor_Wrapper::_setState(bool state, size_t motor)
 
         //Disable PID
         _PidPtr[motor]->SetMode(MANUAL);
+
+        //mode is unchanged because state
+        //does not affect whether the motor
+        //is in a using Pid or nonusing Pid
+        //state
     }
     else
     {
-        //Check if speed is not zero and if PID was disabled
-        if (!Utilities::isEqual_DBL(_setpoints[motor], 0) && _PidPtr[motor]->GetMode() == MANUAL)
+        //Check if current Pid mode matches motor mode
+        //in case state was just off
+        if (_PidPtr[motor]->GetMode() != _mode[motor])
         {
-            //Enable PID
-            _PidPtr[motor]->SetMode(AUTOMATIC);
+            //Check if Pid is being used and if setpoint is not 0
+            //or if Pid is not being used and if output is not 0
+            if ((!Utilities::isEqual_DBL(_setpoints[motor], 0) && _mode[motor] == AUTOMATIC)
+                || (!Utilities::isEqual_DBL(_outputs[motor], 0) && _mode[motor] == MANUAL))
+            {
+                //Resume Pid to intended mode
+                _PidPtr[motor]->SetMode(_mode[motor]);
+            }
         }
     }
 }
