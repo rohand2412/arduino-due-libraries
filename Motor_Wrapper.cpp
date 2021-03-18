@@ -200,12 +200,12 @@ bool Motor_Wrapper::getJustUpdated()
     }
 }
 
-double Motor_Wrapper::getOutput(size_t motor)
+double Motor_Wrapper::getOutput(size_t motor /*= MOTOR_LEFT*/) const
 {
     return _outputs[motor];
 }
 
-double Motor_Wrapper::getInput(size_t motor)
+double Motor_Wrapper::getInput(size_t motor /*= MOTOR_LEFT*/) const
 {
     return _inputs[motor];
 }

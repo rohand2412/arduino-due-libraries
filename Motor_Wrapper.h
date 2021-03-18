@@ -74,9 +74,9 @@ class Motor_Wrapper
 
         bool getJustUpdated();
 
-        double getOutput(size_t motor);
+        double getOutput(size_t motor = MOTOR_LEFT) const;
 
-        double getInput(size_t motor);
+        double getInput(size_t motor = MOTOR_LEFT) const;
 
         void setPwm(int pwm, size_t motor = MOTOR_ALL);
 
