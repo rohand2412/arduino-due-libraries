@@ -24,6 +24,9 @@ class Motor_Wrapper
         double *_outputs;
         double *_setpoints;
 
+        double *_forwardCoefs;
+        double *_backwardCoefs;
+
         bool* _states;
 
         const unsigned int _INTERVAL_MS;
@@ -51,6 +54,14 @@ class Motor_Wrapper
         static const bool MOTOR_ON = true;
         static const bool MOTOR_OFF = false;
 
+        static const size_t COEF_NUM = 3;
+        static const size_t KP_INDEX = 0;
+        static const size_t KI_INDEX = 1;
+        static const size_t KD_INDEX = 2;
+
+        static const bool COEF_FORWARD = 1;
+        static const bool COEF_BACKWARD = 0;
+
     public:
         Motor_Wrapper(unsigned int* ports, size_t motorNum,
                       unsigned int INTERVAL_MS = 20,
@@ -64,9 +75,16 @@ class Motor_Wrapper
 
         void setEncoders(unsigned int* pins);
 
-        void setPid(double kp, double ki, double kd, size_t motor = MOTOR_ALL);
+        void setPid(double forwardKp, double forwardKi, double forwardKd,
+                    double backwardKp, double backwardKi, double backwardKd,
+                    size_t motor = MOTOR_ALL);
 
-        void setPid(double* kps, double* kis, double* kds);
+        void setPid(double* forwardKps, double* forwardKis, double* forwardKds,
+                    double* backwardKps, double* backwardKis, double* backwardKds);
+
+        double getCoef(size_t coefIndex, bool coefType, size_t motor = MOTOR_LEFT) const;
+
+        double getActualCoef(size_t coefIndex, size_t motor = MOTOR_LEFT);
 
         void begin();
 
@@ -130,7 +148,9 @@ class Motor_Wrapper
 
         void _updateMotor(int newSpeed, size_t motor = MOTOR_LEFT);
 
-        void _setPid(double kp, double ki, double kd, size_t motor);
+        void _setPid(double forwardKp, double forwardKi, double forwardKd,
+                     double backwardKp, double backwardKi, double backwardKd,
+                     size_t motor);
 
         void _setPwm(int pwm, size_t motor);
 

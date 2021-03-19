@@ -22,6 +22,8 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
     _inputs = new double [_motorNum];
     _outputs = new double [_motorNum];
     _setpoints = new double [_motorNum];
+    _forwardCoefs = new double[_motorNum * COEF_NUM];
+    _backwardCoefs = new double[_motorNum * COEF_NUM];
     _states = new bool[_motorNum];
 
     //Iterate through motors
@@ -38,6 +40,14 @@ Motor_Wrapper::Motor_Wrapper(unsigned int* ports,
         _inputs[motor] = 0.0f;
         _outputs[motor] = 0.0f;
         _setpoints[motor] = 0.0f;
+        
+        //Initialize coefficents
+        _forwardCoefs[motor * COEF_NUM + KP_INDEX] = 0;
+        _forwardCoefs[motor * COEF_NUM + KI_INDEX] = 0;
+        _forwardCoefs[motor * COEF_NUM + KD_INDEX] = 0;
+        _backwardCoefs[motor * COEF_NUM + KP_INDEX] = 0;
+        _backwardCoefs[motor * COEF_NUM + KI_INDEX] = 0;
+        _backwardCoefs[motor * COEF_NUM + KD_INDEX] = 0;
     }
 
     //Initialize update specific data
@@ -65,6 +75,8 @@ Motor_Wrapper::~Motor_Wrapper()
     delete[] _inputs;
     delete[] _outputs;
     delete[] _setpoints;
+    delete[] _forwardCoefs;
+    delete[] _backwardCoefs;
 
     for (size_t motor = 0; motor < _motorNum; motor++)
     {
@@ -79,7 +91,9 @@ void Motor_Wrapper::setEncoders(unsigned int* pins)
     _encoders.createSensor(pins, _motorNum);
 }
 
-void Motor_Wrapper::setPid(double kp, double ki, double kd, size_t motor /*= MOTOR_ALL*/)
+void Motor_Wrapper::setPid(double forwardKp, double forwardKi, double forwardKd,
+                           double backwardKp, double backwardKi, double backwardKd,
+                           size_t motor /*= MOTOR_ALL*/)
 {
     //Check if data is for all motors
     if (motor == MOTOR_ALL)
@@ -88,24 +102,55 @@ void Motor_Wrapper::setPid(double kp, double ki, double kd, size_t motor /*= MOT
         for (size_t motor = 0; motor < _motorNum; motor++)
         {
             //Initialize pid data for iterated motor
-            _setPid(kp, ki, kd, motor);
+            _setPid(forwardKp, forwardKi, forwardKd, backwardKp, backwardKi, backwardKd, motor);
         }
     }
     //Pid data is for single motor
     else
     {
         //Initialize pid data for single motor
-        _setPid(kp, ki, kd, motor);
+        _setPid(forwardKp, forwardKi, forwardKd, backwardKp, backwardKi, backwardKd, motor);
     }
 }
 
-void Motor_Wrapper::setPid(double* kps, double* kis, double* kds)
+void Motor_Wrapper::setPid(double* forwardKps, double* forwardKis, double* forwardKds,
+                           double* backwardKps, double* backwardKis, double* backwardKds)
 {
     //Iterate through motors
     for (size_t motor = 0; motor < _motorNum; motor++)
     {
         //Initialize pid data for iterated motor
-        _setPid(kps[motor], kis[motor], kds[motor], motor);
+        _setPid(forwardKps[motor], forwardKis[motor], forwardKds[motor],
+                backwardKps[motor], backwardKis[motor], backwardKds[motor],
+                motor);
+    }
+}
+
+double Motor_Wrapper::getCoef(size_t coefIndex, bool coefType, size_t motor /*= MOTOR_LEFT*/) const
+{
+    //Check if forward coefficients are being requested
+    if (coefType)
+    {
+        //Return desired forward coefficient
+        return _forwardCoefs[motor * COEF_NUM + coefIndex];
+    }
+    //Return desired backward coefficient
+    return _backwardCoefs[motor * COEF_NUM + coefIndex];
+}
+
+double Motor_Wrapper::getActualCoef(size_t coefIndex, size_t motor /*= MOTOR_LEFT*/)
+{
+    //Check each possible value
+    switch (coefIndex)
+    {
+        case KP_INDEX:
+            return _PidPtr[motor]->GetKp();
+        
+        case KI_INDEX:
+            return _PidPtr[motor]->GetKi();
+        
+        case KD_INDEX:
+            return _PidPtr[motor]->GetKd();
     }
 }
 
@@ -419,7 +464,27 @@ void Motor_Wrapper::_updateInput(unsigned int elapsedTime, size_t motor)
     if (_PidPtr[motor]->GetMode() == AUTOMATIC)
     {
         //Fetch and scale encoder readings
-        _inputs[motor] = getCount(motor) * (double)_INTERVAL_MS / (double)elapsedTime;
+        double input = getCount(motor) * (double)_INTERVAL_MS / (double)elapsedTime;
+
+        //Check if input just switched to positive
+        if (input > 0 && _inputs[motor] <= 0)
+        {
+            //Set forward coefficients
+            _PidPtr[motor]->SetTunings(_forwardCoefs[motor * COEF_NUM + KP_INDEX],
+                                       _forwardCoefs[motor * COEF_NUM + KI_INDEX],
+                                       _forwardCoefs[motor * COEF_NUM + KD_INDEX]);
+        }
+        //Check if input just switched to negative
+        else if (input < 0 && _inputs[motor] >= 0)
+        {
+            //Set backward coefficients
+            _PidPtr[motor]->SetTunings(_backwardCoefs[motor * COEF_NUM + KP_INDEX],
+                                       _backwardCoefs[motor * COEF_NUM + KI_INDEX],
+                                       _backwardCoefs[motor * COEF_NUM + KD_INDEX]);
+        }
+
+        //Update internal data
+        _inputs[motor] = input;
 
         //Reset for next reading
         resetCount(motor);
@@ -472,16 +537,28 @@ void Motor_Wrapper::_updateMotor(int newSpeed, size_t motor /*= MOTOR_LEFT*/)
     }
 }
 
-void Motor_Wrapper::_setPid(double kp, double ki, double kd, size_t motor)
+void Motor_Wrapper::_setPid(double forwardKp, double forwardKi, double forwardKd,
+                            double backwardKp, double backwardKi, double backwardKd,
+                            size_t motor)
 {
     if (!_initializedPid[motor])
     {
+        //Precompute internal conversion for SetTunings
+        _forwardCoefs[motor * COEF_NUM + KP_INDEX] = forwardKp;
+        _forwardCoefs[motor * COEF_NUM + KI_INDEX] = forwardKi * (double)1000 / (double)_INTERVAL_MS;
+        _forwardCoefs[motor * COEF_NUM + KD_INDEX] = forwardKd * (double)_INTERVAL_MS / (double)1000;
+
+        _backwardCoefs[motor * COEF_NUM + KP_INDEX] = backwardKp;
+        _backwardCoefs[motor * COEF_NUM + KI_INDEX] = backwardKi * (double)1000 / (double)_INTERVAL_MS;
+        _backwardCoefs[motor * COEF_NUM + KD_INDEX] = backwardKd * (double)_INTERVAL_MS / (double)1000;
+
         //Cancel out internal conversion
-        ki *= 100 / _INTERVAL_MS;
-        kd /= 100 / _INTERVAL_MS;
+        forwardKi = (forwardKi * (double)100 / (double)_INTERVAL_MS) * (double)10;
+        forwardKd = (forwardKd * (double)_INTERVAL_MS / (double)100) * (double)0.1;
 
         //Initialize coefficients for motor
-        _PidPtr[motor] = new PID(&_inputs[motor], &_outputs[motor], &_setpoints[motor], kp, ki, kd, DIRECT);
+        _PidPtr[motor] = new PID(&_inputs[motor], &_outputs[motor], &_setpoints[motor],
+                                 forwardKp, forwardKi, forwardKd, DIRECT);
 
         //Configure PID
         _PidPtr[motor]->SetSampleTime(_INTERVAL_MS);
