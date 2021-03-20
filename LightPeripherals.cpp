@@ -9,14 +9,27 @@ LED::LED(unsigned int pin)
 void LED::begin()
 {
     pinMode(_pin, OUTPUT);
-    digitalWrite(_pin, LOW);
-    _state = false;
+
+    _update();
+}
+
+void LED::setPwm(uint8_t pwm)
+{
+    _pwm = pwm;
+
+    _update();
+}
+
+uint8_t LED::getPwm() const
+{
+    return _pwm;
 }
 
 void LED::setState(bool state)
 {
-    digitalWrite(_pin, state);
     _state = state;
+
+    _update();
 }
 
 void LED::toggle()
@@ -32,6 +45,18 @@ void LED::on()
 void LED::off()
 {
     setState(false);
+}
+
+void LED::_update()
+{
+    if (_state && _pwm)
+    {
+        analogWrite(_pin, _pwm);
+    }
+    else
+    {
+        analogWrite(_pin, 0);
+    }
 }
 
 RGB_LED::RGB_LED(unsigned int rPin, unsigned int bPin, unsigned int gPin)
