@@ -32,6 +32,11 @@ void LED::setState(bool state)
     _update();
 }
 
+bool LED::getState() const
+{
+    return _state;
+}
+
 void LED::toggle()
 {
     setState(!_state);

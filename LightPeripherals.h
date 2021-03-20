@@ -21,6 +21,8 @@ class LED
 
         void setState(bool state);
 
+        bool getState() const;
+
         void toggle();
 
         void on();
