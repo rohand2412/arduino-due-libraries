@@ -6,7 +6,8 @@
 #include "Servo_Wrapper.h"
 #include "IMU_Wrapper.h"
 #include "Ultrasonic_Wrapper.h"
-#include "LightPeripherals.h"
+#include "LED.h"
+#include "RGB_LED.h"
 #include "Utilities.h"
 
 class Robot

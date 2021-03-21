@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "Robot.h"
 
-Robot::Robot() : _armServo(35, 140), _camServo(47, 137), _imu(43), _led(39), _rgb(36, 35, 37)
+Robot::Robot() : _armServo(35, 140), _camServo(47, 137), _imu(43), _led(5), _rgb(2, 3, 4)
 {
     //Initialize motors on heap
     const size_t motorNum = 2;
@@ -28,9 +28,8 @@ void Robot::begin(void (*ultrasonicISRs[])())
     unsigned int encoderPins[_motors->getMotorNum() * Encoder_Wrapper::PINS_PER_SENSOR]
         = {46, 44, 50, 48};
     _motors->setEncoders(encoderPins);
-    _motors->setPid(3.5, 10, 0, Motor_Wrapper::MOTOR_LEFT);
-    _motors->setPid(3.5, 10, 0, Motor_Wrapper::MOTOR_LEFT);
-    _motors->setPid(1, 2.5, 0.15, Motor_Wrapper::MOTOR_DIF);
+    _motors->setPid(0.8, 0.75, 0, 0.75, 0.7, 0, Motor_Wrapper::MOTOR_LEFT);
+    _motors->setPid(0.85, 0.8, 0, 0.8, 0.75, 0, Motor_Wrapper::MOTOR_RIGHT);
     _motors->setSpeedMultiplier(Motor_Wrapper::MOTOR_FLIP, Motor_Wrapper::MOTOR_LEFT);
     _motors->setSpeedMultiplier(Motor_Wrapper::MOTOR_NO_FLIP, Motor_Wrapper::MOTOR_RIGHT);
     _motors->begin();
@@ -40,7 +39,7 @@ void Robot::begin(void (*ultrasonicISRs[])())
     _camServo.attach(Servo_Wrapper::SERVO_S2);
 
     //Configure imu
-    adafruit_bno055_offsets_t offsets{13, -48, -25, -101, 127, 438, -2, -2, 0, 1000, 835};
+    adafruit_bno055_offsets_t offsets{12, -25, -27, 0, 0, 0, -2, -2, 0, 1000, 480};
     _imu.setOffsets(offsets);
     _imu.begin();
 
