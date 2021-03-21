@@ -48,6 +48,7 @@ void Robot::begin(void (*ultrasonicISRs[])())
 
     //Configure led
     _led.begin();
+    _led.setPwm(255);
 
     //Configure rgb led
     _rgb.begin();
@@ -192,6 +193,9 @@ void Robot::setEvac()
 
     //Set camera for evacuation room
     _camServo.write(_EVAC_ANGLE);
+
+    //Turn on led
+    _led.on();
 }
 
 void Robot::setLine()
@@ -201,6 +205,9 @@ void Robot::setLine()
 
     //Set camera for line following
     _camServo.write(_LINE_ANGLE);
+
+    //Turn off led
+    _led.off();
 }
 
 bool Robot::nearObstacle()
