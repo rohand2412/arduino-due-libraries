@@ -55,7 +55,7 @@ void Serial_Wrapper::setDefault(const UARTClass& port)
     _port = port;
 }
 
-void Serial_Wrapper::send(const long* buffer, size_t bufferLen, UARTClass& port /*= _port*/)
+void Serial_Wrapper::send(const int32_t* buffer, size_t bufferLen, UARTClass& port /*= _port*/)
 {
     //Start packet with delimiter byte
     port.write(_doCRC(_PACKET_DELIMITER_BYTE));
@@ -64,7 +64,7 @@ void Serial_Wrapper::send(const long* buffer, size_t bufferLen, UARTClass& port 
     for (size_t item = 0; item < bufferLen; item++)
     {
         //Temporary unsigned copy of the current item
-        unsigned long itemByte = buffer[item];
+        uint32_t itemByte = buffer[item];
 
         //Array of the bytes that item would be split into
         uint8_t itemBytes[_MAX_ITEM_BYTES];
@@ -111,7 +111,7 @@ void Serial_Wrapper::send(const long* buffer, size_t bufferLen, UARTClass& port 
     port.write(_doCRC(_PACKET_DELIMITER_BYTE));
 }
 
-size_t Serial_Wrapper::receive(long* buffer, size_t bufferLen, UARTClass& port /*= _port*/)
+size_t Serial_Wrapper::receive(int32_t* buffer, size_t bufferLen, UARTClass& port /*= _port*/)
 {
     //Allocate memory for incoming message
     uint8_t message;
@@ -185,7 +185,7 @@ void Serial_Wrapper::_write(uint8_t item, UARTClass& port)
     }
 }
 
-bool Serial_Wrapper::_receiveSM(long *buffer, size_t *itemNum, size_t bufferLen, uint8_t byte_in)
+bool Serial_Wrapper::_receiveSM(int32_t *buffer, size_t *itemNum, size_t bufferLen, uint8_t byte_in)
 {
     //Switch on state of state machine
     switch (_state)

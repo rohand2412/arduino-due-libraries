@@ -31,16 +31,16 @@ class Serial_Wrapper
 
         static void setDefault(const UARTClass& port);
 
-        static void send(const long* buffer, size_t bufferLen, UARTClass& port = _port);
+        static void send(const int32_t* buffer, size_t bufferLen, UARTClass& port = _port);
 
-        static size_t receive(long* buffer, size_t bufferLen, UARTClass& port = _port);
+        static size_t receive(int32_t* buffer, size_t bufferLen, UARTClass& port = _port);
 
     private:
         Serial_Wrapper();
 
         static void _write(uint8_t item, UARTClass& port);
 
-        static bool _receiveSM(long *buffer, size_t *i, size_t bufferLen, uint8_t byte_in);
+        static bool _receiveSM(int32_t *buffer, size_t *i, size_t bufferLen, uint8_t byte_in);
 
         static uint8_t _doCRC(uint8_t message);
 
