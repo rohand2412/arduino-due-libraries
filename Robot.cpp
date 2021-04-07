@@ -27,6 +27,11 @@ Robot::Robot() : _armServo(35, 140), _camServo(47, 137), _imu(43), _led(5), _rgb
 
 void Robot::begin(void (*ultrasonicISRs[])(), void (*buttonPinISR)())
 {
+    //Configure serial
+    Serial_Wrapper::begin(115200, Serial);
+    Serial_Wrapper::begin(115200, Serial3);
+    Serial_Wrapper::setDefault(Serial3);
+
     //Configure motors
     unsigned int encoderPins[_motors->getMotorNum() * Encoder_Wrapper::PINS_PER_SENSOR]
         = {46, 44, 50, 48};
