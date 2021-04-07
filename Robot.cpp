@@ -280,8 +280,8 @@ void Robot::setLine()
         //Set camera for line following
         _camServo.write(_LINE_ANGLE);
 
-        //Turn off led
-        _led.off();
+        //Turn on led
+        _led.on();
     }
 }
 
