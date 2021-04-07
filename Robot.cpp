@@ -162,6 +162,14 @@ void Robot::runDistance_CM(double speed, int distance)
             //Make sure roboti is not already driving
             if (!isDrivingDistance())
             {
+                //Check if robot needs to drive backwards
+                if (speed < 0 || distance < 0)
+                {
+                    //Make sure both params are negative
+                    speed = speed > 0 ? -speed : speed;
+                    distance = distance > 0 ? -distance : distance;
+                }
+
                 //Calculate distance in counts
                 _distanceCounts = round(distance * _motors->getCountsPerRev() / _TIRE_CIRCUMFRENCE);
 
