@@ -156,8 +156,8 @@ void Robot::runDistance_CM(double speed, int distance)
     //Make sure robot is not dormant
     if (!isDormant())
     {
-        //Make sure distance is not 0
-        if (distance)
+        //Make sure distance and speed is not 0
+        if (distance && !Utilities::isEqual_DBL(speed, 0))
         {
             //Make sure roboti is not already driving
             if (!isDrivingDistance())
