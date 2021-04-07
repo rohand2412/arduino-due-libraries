@@ -8,6 +8,7 @@
 #include "Ultrasonic_Wrapper.h"
 #include "LED.h"
 #include "RGB_LED.h"
+#include "Button_Wrapper.h"
 #include "Utilities.h"
 
 class Robot
@@ -34,6 +35,8 @@ class Robot
 
         RGB_LED _rgb;
 
+        Button_Wrapper _button;
+
         bool _isTurning = false;
         double _startYaw = 0;
         double _turnAngle = 0;
@@ -45,7 +48,7 @@ class Robot
     public:
         Robot();
 
-        void begin(void (*ultrasonicISRs[])());
+        void begin(void (*ultrasonicISRs[])(), void (*buttonPinISR)());
 
         void update();
 
@@ -86,4 +89,6 @@ class Robot
         LED &getLED();
 
         RGB_LED &getRGB_LED();
+
+        Button_Wrapper &getButton();
 };

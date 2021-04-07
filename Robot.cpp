@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "Robot.h"
 
-Robot::Robot() : _armServo(35, 140), _camServo(47, 137), _imu(43), _led(5), _rgb(2, 3, 4)
+Robot::Robot() : _armServo(35, 140), _camServo(47, 137), _imu(43), _led(5), _rgb(2, 3, 4), _button(40)
 {
     //Initialize motors on heap
     const size_t motorNum = 2;
@@ -22,7 +22,7 @@ Robot::Robot() : _armServo(35, 140), _camServo(47, 137), _imu(43), _led(5), _rgb
     _ultrasonics = new Ultrasonic_Wrapper(trigPin, echoPins, burstFrequency, ultrasonicsNum);
 }
 
-void Robot::begin(void (*ultrasonicISRs[])())
+void Robot::begin(void (*ultrasonicISRs[])(), void (*buttonPinISR)())
 {
     //Configure motors
     unsigned int encoderPins[_motors->getMotorNum() * Encoder_Wrapper::PINS_PER_SENSOR]
@@ -52,6 +52,9 @@ void Robot::begin(void (*ultrasonicISRs[])())
 
     //Configure rgb led
     _rgb.begin();
+
+    //Configure button
+    _button.begin(buttonPinISR);
 }
 
 void Robot::update()
@@ -62,6 +65,8 @@ void Robot::update()
     _imu.update();
 
     _ultrasonics->update();
+
+    _button.update();
 
     //Check if robot is turning
     if (isTurning())
@@ -262,4 +267,10 @@ RGB_LED &Robot::getRGB_LED()
 {
     //Return reference to rgb led
     return _rgb;
+}
+
+Button_Wrapper &Robot::getButton()
+{
+    //Return reference to button
+    return _button;
 }
