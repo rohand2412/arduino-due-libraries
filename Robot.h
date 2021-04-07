@@ -66,17 +66,17 @@ class Robot
 
         void update();
 
-        bool isDormant();
+        bool isDormant() const;
 
         void run(double leftSpeed, double rightSpeed);
 
         void runDistance_CM(double speed, int distance);
 
-        bool isDrivingDistance();
+        bool isDrivingDistance() const;
 
         void turn(double angle);
 
-        bool isTurning();
+        bool isTurning() const;
 
         void captureBall();
 

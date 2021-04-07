@@ -125,7 +125,7 @@ void Robot::update()
     }
 }
 
-bool Robot::isDormant()
+bool Robot::isDormant() const
 {
     return _state == _State::DORMANT;
 }
@@ -173,7 +173,7 @@ void Robot::runDistance_CM(double speed, int distance)
     }
 }
 
-bool Robot::isDrivingDistance()
+bool Robot::isDrivingDistance() const
 {
     return _isDrivingDistance;
 }
@@ -217,7 +217,7 @@ void Robot::turn(double angle)
     }
 }
 
-bool Robot::isTurning()
+bool Robot::isTurning() const
 {
     //Return turn status
     return _isTurning;
