@@ -45,12 +45,26 @@ class Robot
         bool _isDrivingDistance = false;
         int _distanceCounts = 0;
 
+        enum class _State
+        {
+            DORMANT,
+            RESET
+        };
+
+        _State _state;
+
+        const uint8_t _RESET_PIN = 34;
+        const int32_t _RESET_MESSAGE = 0xFFFF;
+        const size_t _RESET_MESSAGE_LEN = 1;
+
     public:
         Robot();
 
         void begin(void (*ultrasonicISRs[])(), void (*buttonPinISR)());
 
         void update();
+
+        bool isDormant();
 
         void run(double leftSpeed, double rightSpeed);
 

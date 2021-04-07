@@ -3,6 +3,9 @@
 
 Robot::Robot() : _armServo(35, 140), _camServo(47, 137), _imu(43), _led(5), _rgb(2, 3, 4), _button(40)
 {
+    //Set start-up state to dormant
+    _state = _State::DORMANT;
+
     //Initialize motors on heap
     const size_t motorNum = 2;
     unsigned int motorPorts[motorNum] = {Motor_Wrapper::SHIELD_M1, Motor_Wrapper::SHIELD_M3};
@@ -96,33 +99,72 @@ void Robot::update()
             _isDrivingDistance = false;
         }
     }
+
+    //Check if button has been pressed once and robot is dormant
+    if (_button.getState() && isDormant())
+    {
+        //Set next button press to reset robot
+        _state = _State::RESET;
+    }
+    //Check if button has been pressed twice and robot is not dormant
+    else if (!_button.getState() && !isDormant())
+    {
+        //Signal reset to raspberry pi
+        Serial_Wrapper::send(&_RESET_MESSAGE, _RESET_MESSAGE_LEN, Serial3);
+        Serial3.flush();
+
+        //Configure reset pin only when necessary
+        pinMode(_RESET_PIN, OUTPUT);
+
+        //Reset arduino
+        digitalWrite(_RESET_PIN, LOW);
+    }
+}
+
+bool Robot::isDormant()
+{
+    return _state == _State::DORMANT;
 }
 
 void Robot::run(double leftSpeed, double rightSpeed)
 {
-    //Run individual motors
-    _motors->run(leftSpeed, Motor_Wrapper::MOTOR_LEFT);
-    _motors->run(rightSpeed, Motor_Wrapper::MOTOR_RIGHT);
+    //Make sure robot is not dormant
+    if (!isDormant())
+    {
+        //Run individual motors
+        _motors->run(leftSpeed, Motor_Wrapper::MOTOR_LEFT);
+        _motors->run(rightSpeed, Motor_Wrapper::MOTOR_RIGHT);
 
-    //Indicate terminated turn in case robot was mid-turn
-    _isTurning = false;
+        //Indicate terminated turn in case robot was mid-turn
+        _isTurning = false;
 
-    _isDrivingDistance = false;
+        _isDrivingDistance = false;
+    }
 }
 
 void Robot::runDistance_CM(double speed, int distance)
 {
-    if (distance)
+    //Make sure robot is not dormant
+    if (!isDormant())
     {
-        if (!isDrivingDistance())
+        //Make sure distance is not 0
+        if (distance)
         {
-            _distanceCounts = round(distance * _motors->getCountsPerRev() / _TIRE_CIRCUMFRENCE);
+            //Make sure roboti is not already driving
+            if (!isDrivingDistance())
+            {
+                //Calculate distance in counts
+                _distanceCounts = round(distance * _motors->getCountsPerRev() / _TIRE_CIRCUMFRENCE);
 
-            _encoders.resetCount();
+                //Reset encoders
+                _encoders.resetCount();
 
-            run(speed, speed);
+                //Start motors
+                run(speed, speed);
 
-            _isDrivingDistance = true;
+                //Indicate robot is driving
+                _isDrivingDistance = true;
+            }
         }
     }
 }
@@ -134,35 +176,39 @@ bool Robot::isDrivingDistance()
 
 void Robot::turn(double angle)
 {
-    //Check if angle is 0
-    if (!Utilities::isEqual_DBL(angle, 0))
+    //Make sure robot is not dormant
+    if (!isDormant())
     {
-        //Check if robot is not already turning
-        if (!isTurning())
+        //Check if angle is 0
+        if (!Utilities::isEqual_DBL(angle, 0))
         {
-            //Save desired turn angle
-            _turnAngle = angle;
-
-            //Save starting angle
-            _startYaw = _imu.getYaw();
-
-            //Check if the angle is positive
-            if (angle > 0)
+            //Check if robot is not already turning
+            if (!isTurning())
             {
-                //Run left motor forward
-                //Run right motor backward
-                run(0.5, -0.5);
-            }
-            //Angle is negative
-            else
-            {
-                //Run left motor backward
-                //Run right motor forward
-                run(-0.5, 0.5);
-            }
+                //Save desired turn angle
+                _turnAngle = angle;
 
-            //Indicate turn in progress
-            _isTurning = true;
+                //Save starting angle
+                _startYaw = _imu.getYaw();
+
+                //Check if the angle is positive
+                if (angle > 0)
+                {
+                    //Run left motor forward
+                    //Run right motor backward
+                    run(0.5, -0.5);
+                }
+                //Angle is negative
+                else
+                {
+                    //Run left motor backward
+                    //Run right motor forward
+                    run(-0.5, 0.5);
+                }
+
+                //Indicate turn in progress
+                _isTurning = true;
+            }
         }
     }
 }
@@ -175,44 +221,64 @@ bool Robot::isTurning()
 
 void Robot::captureBall()
 {
-    //Bring arm to ground
-    _armServo.write(_GROUND_ANGLE);
+    //Make sure robot is not dormant
+    if (!isDormant())
+    {
+        //Bring arm to ground
+        _armServo.write(_GROUND_ANGLE);
+    }
 }
 
 void Robot::holdBalls()
 {
-    //Raise arm to holding angle
-    _armServo.write(_HOLD_ANGLE);
+    //Make sure robot is not dormant
+    if (!isDormant())
+    {
+        //Raise arm to holding angle
+        _armServo.write(_HOLD_ANGLE);
+    }
 }
 
 void Robot::dropBalls()
 {
-    //Lower arm to dropping angle
-    _armServo.write(_DROP_ANGLE);
+    //Make sure robot is not dormant
+    if (!isDormant())
+    {
+        //Lower arm to dropping angle
+        _armServo.write(_DROP_ANGLE);
+    }
 }
 
 void Robot::setEvac()
 {
-    //Move arm out of the way
-    holdBalls();
+    //Make sure robot is not dormant
+    if (!isDormant())
+    {
+        //Move arm out of the way
+        holdBalls();
 
-    //Set camera for evacuation room
-    _camServo.write(_EVAC_ANGLE);
+        //Set camera for evacuation room
+        _camServo.write(_EVAC_ANGLE);
 
-    //Turn on led
-    _led.on();
+        //Turn on led
+        _led.on();
+    }
 }
 
 void Robot::setLine()
 {
-    //Move arm out of the way
-    holdBalls();
+    //Make sure robot is not dormant
+    if (!isDormant())
+    {
+        //Move arm out of the way
+        holdBalls();
 
-    //Set camera for line following
-    _camServo.write(_LINE_ANGLE);
+        //Set camera for line following
+        _camServo.write(_LINE_ANGLE);
 
-    //Turn off led
-    _led.off();
+        //Turn off led
+        _led.off();
+    }
 }
 
 bool Robot::nearObstacle()
