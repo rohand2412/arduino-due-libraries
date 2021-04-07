@@ -41,6 +41,10 @@ void Robot::begin(void (*ultrasonicISRs[])(), void (*buttonPinISR)())
     _armServo.attach(Servo_Wrapper::SERVO_S1, 510, 2520);
     _camServo.attach(Servo_Wrapper::SERVO_S2);
 
+    //Preset servo positions
+    _armServo.write(_ARM_PRESET_ANGLE);
+    _camServo.write(_CAM_PRESET_ANGLE);
+
     //Configure imu
     adafruit_bno055_offsets_t offsets{12, -25, -27, 0, 0, 0, -2, -2, 0, 1000, 480};
     _imu.setOffsets(offsets);

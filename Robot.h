@@ -26,6 +26,8 @@ class Robot
         const uint8_t _DROP_ANGLE = 140;
         const uint8_t _EVAC_ANGLE = 15;
         const uint8_t _LINE_ANGLE = 35;
+        const uint8_t _ARM_PRESET_ANGLE = 90;
+        const uint8_t _CAM_PRESET_ANGLE = 10;
 
         IMU_Wrapper _imu;
 
