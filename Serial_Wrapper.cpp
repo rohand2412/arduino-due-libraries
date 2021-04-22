@@ -216,24 +216,6 @@ bool Serial_Wrapper::_receiveSM(int32_t *buffer, size_t *itemNum, size_t bufferL
                 //Increment item index of buffer
                 (*itemNum)++;
 
-                //Check if itemNum exceeds array length
-                if ((*itemNum) >= bufferLen)
-                {
-                    //Check if Serial has already been started
-                    if (!Serial)
-                    {
-                        //Start serial at 750000 baud
-                        begin(750000, Serial);
-                    }
-
-                    //Endlessly repeat
-                    while (true)
-                    {
-                        //Spam user with error messages
-                        Serial.println("[ERROR] PACKET LENGTH OVERFLOW! PLEASE ALLOCATE MORE MEMORY!");
-                    }
-                }
-
                 //Packet is still not complete
                 return false;
             }
@@ -246,6 +228,24 @@ bool Serial_Wrapper::_receiveSM(int32_t *buffer, size_t *itemNum, size_t bufferL
 
                 //Packet hasn't been completed yet
                 return false;
+            }
+
+            //Check if itemNum exceeds array length
+            if ((*itemNum) >= bufferLen)
+            {
+                //Check if Serial has already been started
+                if (!Serial)
+                {
+                    //Start serial at 750000 baud
+                    begin(750000, Serial);
+                }
+
+                //Endlessly repeat
+                while (true)
+                {
+                    //Spam user with error messages
+                    Serial.println("[ERROR] PACKET LENGTH OVERFLOW! PLEASE ALLOCATE MORE MEMORY!");
+                }
             }
 
             //If made it here, byte is just regular item in packet
