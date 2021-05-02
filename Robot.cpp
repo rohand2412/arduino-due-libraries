@@ -236,6 +236,16 @@ bool Robot::isTurning() const
     return _isTurning;
 }
 
+void Robot::stop()
+{
+    //Stop motors
+    _motors->stop();
+
+    //Terminate ongoing actions if any
+    _isTurning = false;
+    _isDrivingDistance = false;
+}
+
 void Robot::captureBall()
 {
     //Make sure robot is not dormant
