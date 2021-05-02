@@ -236,6 +236,12 @@ bool Robot::isTurning() const
     return _isTurning;
 }
 
+bool Robot::available() const
+{
+    //return true if nothing is happening
+    return !(_isTurning || _isDrivingDistance);
+}
+
 void Robot::stop()
 {
     //Stop motors

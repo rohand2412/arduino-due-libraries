@@ -78,6 +78,8 @@ class Robot
 
         bool isTurning() const;
 
+        bool available() const;
+
         void stop();
 
         void captureBall();
