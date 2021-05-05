@@ -29,7 +29,7 @@ void Robot::begin(void (*ultrasonicISRs[])(), void (*buttonPinISR)())
 {
     //Configure serial
     Serial_Wrapper::begin(115200, Serial);
-    Serial_Wrapper::begin(115200, Serial3);
+    Serial_Wrapper::begin(460800, Serial3);
     Serial_Wrapper::setDefault(Serial3);
 
     //Configure motors
