@@ -22,7 +22,7 @@ void Serial_Wrapper::begin(uint32_t baudRate, UARTClass& port)
 {
     //Check if baudrate does not have corresponding
     //predefined UART_BRGR
-    if (baudRate > 115200 && baudRate != 750000)
+    if (baudRate > 460800 && baudRate != 750000)
     {
         //Start Serial
         begin(750000, Serial);
