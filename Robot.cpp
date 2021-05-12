@@ -191,7 +191,7 @@ bool Robot::isDrivingDistance() const
     return _isDrivingDistance;
 }
 
-void Robot::turn(double angle)
+void Robot::turn(double angle, double speed /*= 0.5*/)
 {
     //Make sure robot is not dormant
     if (!isDormant())
@@ -213,14 +213,14 @@ void Robot::turn(double angle)
                 {
                     //Run left motor forward
                     //Run right motor backward
-                    run(0.5, -0.5);
+                    run(fabs(speed), -fabs(speed));
                 }
                 //Angle is negative
                 else
                 {
                     //Run left motor backward
                     //Run right motor forward
-                    run(-0.5, 0.5);
+                    run(-fabs(speed), fabs(speed));
                 }
 
                 //Indicate turn in progress

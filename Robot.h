@@ -74,7 +74,7 @@ class Robot
 
         bool isDrivingDistance() const;
 
-        void turn(double angle);
+        void turn(double angle, double speed = 0.5);
 
         bool isTurning() const;
 
