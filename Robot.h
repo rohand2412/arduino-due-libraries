@@ -76,6 +76,8 @@ class Robot
 
         void turn(double angle, double speed = 0.5);
 
+        double angleTurned();
+
         bool isTurning() const;
 
         bool available() const;

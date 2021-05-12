@@ -230,6 +230,13 @@ void Robot::turn(double angle, double speed /*= 0.5*/)
     }
 }
 
+double Robot::angleTurned()
+{
+    //Return difference between
+    //start angle and current angle
+    return _imu.getYaw() - _startYaw;
+}
+
 bool Robot::isTurning() const
 {
     //Return turn status
