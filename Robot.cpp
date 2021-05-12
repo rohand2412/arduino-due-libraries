@@ -84,7 +84,7 @@ void Robot::update()
     if (isTurning())
     {
         //Check if turn angle has been achieved
-        if (fabs(_imu.getYaw() - _startYaw) >= fabs(_turnAngle))
+        if (fabs(angleTurned()) >= fabs(_turnAngle))
         {
             //Stop motors
             _motors->stop();
