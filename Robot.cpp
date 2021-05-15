@@ -186,6 +186,46 @@ void Robot::runDistance_CM(double speed, int distance)
     }
 }
 
+void Robot::runDistance_CM(double leftSpeed, double rightSpeed, int distance)
+{
+    //Make sure robot is not dormant
+    if (!isDormant())
+    {
+        //Make sure distance and speed is not 0
+        if (distance && !Utilities::isEqual_DBL(leftSpeed, 0) && !Utilities::isEqual_DBL(rightSpeed, 0))
+        {
+            //Make sure robot is not already turning
+            if (!isTurning())
+            {
+                //Check if data has already been computed for this run
+                if (!isDrivingDistance())
+                {
+                    //Calculate distance in counts
+                    _distanceCounts = round(distance * _motors->getCountsPerRev() / _TIRE_CIRCUMFRENCE);
+
+                    //Reset encoders
+                    _encoders.resetCount();
+                }
+
+                //Check if robot needs to drive backwards
+                if (leftSpeed < 0 || rightSpeed < 0 || distance < 0)
+                {
+                    //Make sure all params are negative
+                    leftSpeed = leftSpeed > 0 ? -leftSpeed : leftSpeed;
+                    rightSpeed = rightSpeed > 0 ? -rightSpeed : rightSpeed;
+                    distance = distance > 0 ? -distance : distance;
+                }
+
+                //Start motors
+                run(leftSpeed, rightSpeed);
+
+                //Indicate robot is driving
+                _isDrivingDistance = true;
+            }
+        }
+    }
+}
+
 bool Robot::isDrivingDistance() const
 {
     return _isDrivingDistance;

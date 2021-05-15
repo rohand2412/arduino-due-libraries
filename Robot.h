@@ -72,6 +72,8 @@ class Robot
 
         void runDistance_CM(double speed, int distance);
 
+        void runDistance_CM(double leftSpeed, double rightSpeed, int distance);
+
         bool isDrivingDistance() const;
 
         void turn(double angle, double speed = 0.5);
