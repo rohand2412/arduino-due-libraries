@@ -18,8 +18,8 @@ Robot::Robot() : _armServo(35, 140), _camServo(47, 137), _imu(43), _led(5), _rgb
     _encoders.createSensor(encoderPins, encoderNum);
 
     //Initialize ultrasonics on heap
-    const size_t ultrasonicsNum = 4;
-    unsigned int echoPins[ultrasonicsNum] = {53, 51, 49, 47};
+    const size_t ultrasonicsNum = 5;
+    unsigned int echoPins[ultrasonicsNum] = {53, 51, 49, 47, 33};
     const unsigned int trigPin = 52;
     const unsigned int burstFrequency = 20;
     _ultrasonics = new Ultrasonic_Wrapper(trigPin, echoPins, burstFrequency, ultrasonicsNum);
