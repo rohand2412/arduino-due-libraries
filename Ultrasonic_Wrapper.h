@@ -16,6 +16,7 @@ class Ultrasonic_Wrapper
         static const size_t ULTRASONIC_LEFT = 1;
         static const size_t ULTRASONIC_RIGHT = 2;
         static const size_t ULTRASONIC_BACK = 3;
+        static const size_t ULTRASONIC_TOP = 4;
 
     public:
         Ultrasonic_Wrapper(unsigned int trigPin,
