@@ -99,9 +99,9 @@ void Robot::update()
                               * _motors->getSpeedMultiplier(Motor_Wrapper::MOTOR_LEFT);
         long int rightCounts = _encoders.getCount(Encoder_Wrapper::ENCODER_RIGHT)
                                * _motors->getSpeedMultiplier(Motor_Wrapper::MOTOR_RIGHT);
-        long int averageCounts = (leftCounts + rightCounts) / 2;
+        _averageCounts = (leftCounts + rightCounts) / 2;
 
-        if (abs(averageCounts) >= abs(_distanceCounts))
+        if (abs(_averageCounts) >= abs(_distanceCounts))
         {
             _motors->stop();
 
@@ -224,6 +224,13 @@ void Robot::runDistance_CM(double leftSpeed, double rightSpeed, int distance)
             }
         }
     }
+}
+
+int Robot::distanceDriven()
+{
+    //Converts average counts
+    //back to cm and returns
+    return round((double)_averageCounts * _TIRE_CIRCUMFRENCE / (double)_motors->getCountsPerRev());
 }
 
 bool Robot::isDrivingDistance() const

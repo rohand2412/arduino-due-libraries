@@ -45,7 +45,8 @@ class Robot
 
         const double _TIRE_CIRCUMFRENCE = 3.9 * PI;
         bool _isDrivingDistance = false;
-        int _distanceCounts = 0;
+        long int _distanceCounts = 0;
+        long int _averageCounts = 0;
 
         enum class _State
         {
@@ -73,6 +74,8 @@ class Robot
         void runDistance_CM(double speed, int distance);
 
         void runDistance_CM(double leftSpeed, double rightSpeed, int distance);
+
+        int distanceDriven();
 
         bool isDrivingDistance() const;
 
