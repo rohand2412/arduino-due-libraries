@@ -208,7 +208,7 @@ void Robot::runDistance_CM(double leftSpeed, double rightSpeed, int distance)
                 }
 
                 //Check if robot needs to drive backwards
-                if (leftSpeed < 0 || rightSpeed < 0 || distance < 0)
+                if (leftSpeed < 0 || rightSpeed < 0 || _distanceCounts < 0)
                 {
                     //Make sure all params are negative
                     leftSpeed = leftSpeed > 0 ? -leftSpeed : leftSpeed;
