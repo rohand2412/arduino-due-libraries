@@ -36,8 +36,8 @@ void Robot::begin(void (*ultrasonicISRs[])(), void (*buttonPinISR)())
     unsigned int encoderPins[_motors->getMotorNum() * Encoder_Wrapper::PINS_PER_SENSOR]
         = {46, 44, 50, 48};
     _motors->setEncoders(encoderPins);
-    _motors->setPid(0.8, 0.75, 0, 0.75, 0.7, 0, Motor_Wrapper::MOTOR_LEFT);
-    _motors->setPid(0.8, 0.8, 0, 0.7, 0.7, 0, Motor_Wrapper::MOTOR_RIGHT);
+    _motors->setPid(0.7, 0.7, 0, 0.7, 0.7, 0, Motor_Wrapper::MOTOR_LEFT);
+    _motors->setPid(0.75, 0.7, 0, 0.7, 0.7, 0, Motor_Wrapper::MOTOR_RIGHT);
     _motors->setSpeedMultiplier(Motor_Wrapper::MOTOR_FLIP, Motor_Wrapper::MOTOR_LEFT);
     _motors->setSpeedMultiplier(Motor_Wrapper::MOTOR_NO_FLIP, Motor_Wrapper::MOTOR_RIGHT);
     _motors->begin();
