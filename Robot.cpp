@@ -207,15 +207,6 @@ void Robot::runDistance_CM(double leftSpeed, double rightSpeed, int distance)
                     _encoders.resetCount();
                 }
 
-                //Check if robot needs to drive backwards
-                if (leftSpeed < 0 || rightSpeed < 0 || _distanceCounts < 0)
-                {
-                    //Make sure all params are negative
-                    leftSpeed = leftSpeed > 0 ? -leftSpeed : leftSpeed;
-                    rightSpeed = rightSpeed > 0 ? -rightSpeed : rightSpeed;
-                    distance = distance > 0 ? -distance : distance;
-                }
-
                 //Start motors
                 run(leftSpeed, rightSpeed);
 
