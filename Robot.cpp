@@ -29,8 +29,8 @@ void Robot::begin(void (*ultrasonicISRs[])(), void (*buttonPinISR)())
 {
     //Configure serial
     Serial_Wrapper::begin(115200, Serial);
-    Serial_Wrapper::begin(460800, Serial3);
-    Serial_Wrapper::setDefault(Serial3);
+    Serial_Wrapper::begin(460800, Serial2);
+    Serial_Wrapper::setDefault(Serial2);
 
     //Configure motors
     unsigned int encoderPins[_motors->getMotorNum() * Encoder_Wrapper::PINS_PER_SENSOR]
@@ -119,8 +119,8 @@ void Robot::update()
     else if (!_button.getState() && !isDormant())
     {
         //Signal reset to raspberry pi
-        Serial_Wrapper::send(&_RESET_MESSAGE, _RESET_MESSAGE_LEN, Serial3);
-        Serial3.flush();
+        Serial_Wrapper::send(&_RESET_MESSAGE, _RESET_MESSAGE_LEN, Serial2);
+        Serial2.flush();
 
         //Configure reset pin only when necessary
         pinMode(_RESET_PIN, OUTPUT);
