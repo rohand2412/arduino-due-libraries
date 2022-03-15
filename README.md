@@ -55,7 +55,7 @@ This repository was developed with PlatformIO so there are some slight discrepan
 
 ## Example Code
 
-[Here]() is a collection of PlatformIO projects that are test cases for the classes of this repository and serve as example code as well. For Arduino IDE users, just look at `src/main.cpp` under any of the projects and don't mind the `#include <Arduino.h>`, that just includes all of the Arduino functionality from PlatformIO.
+[Here](https://gitlab.com/rohand2412/arduino-due-hardware-interfaces) is a collection of PlatformIO projects that are test cases for the classes of this repository and serve as example code as well. For Arduino IDE users, just look at `src/main.cpp` under any of the projects and don't mind the `#include <Arduino.h>`, that just includes all of the Arduino functionality from PlatformIO.
 
 ## Resources
 
